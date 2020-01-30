@@ -13,10 +13,26 @@ public class ElevatorEvent {
 	private boolean floorButton; // true if up, false if down c
 	private int destinationFloor;
 	
-	public ElevatorEvent(String time, int floor, boolean floorButton, int destinationFloor) {
+	public ElevatorEvent(String time, String floor, String floorButton, String destinationFloor) {
 		this.time = Time.valueOf(time);
-		this.destinationFloor = destinationFloor;
-		this.floor = floor;
-		this.floorButton = floorButton;
+		this.destinationFloor = Integer.parseInt(destinationFloor);
+		this.floor = Integer.parseInt(floor);
+		this.floorButton = floorButton.equalsIgnoreCase("up")  ? true : false;
+	}
+	
+	public Time getTime() {
+		return time;
+	}
+	
+	public int getCurrFloor() {
+		return floor;
+	}
+	
+	public boolean getDirection() {
+		return floorButton;
+	}
+	
+	public int getDestinationFloor() {
+		return destinationFloor;
 	}
 }
