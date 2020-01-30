@@ -7,7 +7,7 @@ import java.util.Date;
 
 public class Floor implements Runnable{
 	/**
-	 * this class read in event Time, floor or elevator number, and button
+	 * this class store read in event Time, floor or elevator number, and button into a list of ControlData stcture
 	 * @author Zewen Chen
 	 */
 	File file;
