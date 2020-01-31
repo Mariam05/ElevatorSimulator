@@ -15,4 +15,7 @@ Authors: Defa Hu, Zewen Chen, Henrry Wilson, Mariam Almalki, Ruqaya Malki
 
 DESCRIPTION: 
   
-          This project is simulating the elevator control system. we will have a file acting the user role to request the elevator. the Floor will get the request and send it to Scheduler, and Elevator keep getting request from Scheduler, then Elevator knows what floor to go.
+          This project is simulating the elevator control system.
+          we will have a file acting the user role to request the elevator.
+          the Floor will get the request and send it to Scheduler, and Elevator
+          keep getting request from Scheduler, then Elevator knows what floor to go.
