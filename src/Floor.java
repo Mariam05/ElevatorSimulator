@@ -16,11 +16,11 @@ public class Floor implements Runnable{
 	private int floor;
 	private boolean floorButton; // true if up, false if down c
 	private int destinationFloor;
-	private ArrayList<ControlDate> datas;
+	private ArrayList<elevatorEvent> datas;
 	private SimpleDateFormat sdf;
 	public Floor() {
 		this.file = new File("/Users/admin/eclipse-workspace/SYSC3303Project/data.txt");
-		this.datas = new ArrayList<ControlDate>();
+		this.datas = new ArrayList<elevatorEvent>();
 		sdf = new SimpleDateFormat("hh:mm:ss.mmm");
 	}
 	@Override
@@ -56,7 +56,7 @@ public class Floor implements Runnable{
 						destinationFloor = Integer.parseInt(x[i]);
 					}
 				}
-			datas.add(new ControlDate(time,floor,floorButton,destinationFloor));
+			datas.add(new elevatorEvent(time,floor,floorButton,destinationFloor));
 			}
 			System.out.print(datas.get(3).getTime());
 			br.close();
