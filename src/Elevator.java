@@ -1,7 +1,7 @@
 
 public class Elevator implements Runnable{
 	
-	private int id;
+	private int id; //elevator number
 	private Scheduler scheduler;
 	private int currFloor;
 

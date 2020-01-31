@@ -13,6 +13,10 @@ public class Scheduler implements Runnable {
 		requestPending = false;
 	}
 	
+	/**
+	 * send request from floor to Scheduler
+	 * @param ee
+	 */
 	public synchronized void putRequest(ControlDate ee) {
 		while(requestPending) {
 			try {
@@ -36,6 +40,9 @@ public class Scheduler implements Runnable {
 		
 	}
 	
+	/**
+	 * get request from the Scheduler to elevator, to let the elevator move
+	 */
 	public synchronized void getRequest() {
 		while(!requestPending) {
 			try {
