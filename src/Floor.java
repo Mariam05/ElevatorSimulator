@@ -18,10 +18,10 @@ public class Floor implements Runnable{
 	private int destinationFloor;
 	private ArrayList<ControlDate> datas;
 	private SimpleDateFormat sdf;
-	private Scheduler s;
+	private Buffer buffer;
 	
-	public Floor(Scheduler s) {
-		this.s = s;
+	public Floor(Buffer buffer) {
+		this.buffer = buffer;
 		this.file = new File("data.txt");
 		this.datas = new ArrayList<ControlDate>();
 		sdf = new SimpleDateFormat("hh:mm:ss.mmm");
@@ -79,10 +79,15 @@ public class Floor implements Runnable{
 		
 	}
 
+	public void receiveDataFromElevator(ControlDate c) {
+		System.out.format("Floor received elevator info from scheduler: moved from floor %d to %d\n", c.getFloor(),
+				c.getDestinationFloor());
+	}
+	
 	@Override
 	public void run() {
 		for (ControlDate c : datas) {
-			s.putRequest(c);
+			buffer.putFloorRequest(c);
 		}
 		
 	}

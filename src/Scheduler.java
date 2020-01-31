@@ -2,63 +2,35 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class Scheduler implements Runnable {
-	
+
 	private Floor floor;
 	private Elevator elev;
 	private boolean requestPending;
-	
+	private Buffer buffer;
+
 	private ControlDate event;
 
-	public Scheduler() {
+	public Scheduler(Floor floor, Elevator elevator, Buffer buffer) {
 		requestPending = false;
+		this.floor = floor;
+		this.elev = elevator;
+		this.buffer = buffer;
 	}
-	
-	public synchronized void putRequest(ControlDate ee) {
-		while(requestPending) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		this.event = ee;
-		System.out.println("Sending a request from floor " + ee.getFloor());
-		try {
-			Thread.sleep(1000); //give the request some time 
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		requestPending = true;
-		notifyAll();
-		
-		
+
+	public synchronized void sendRequestToElevator(ControlDate c) {
+		System.out.println("Scheduler is sending info from floor to elevator");
+		elev.receiveFloorInfo(c);
 	}
-	
-	public synchronized void getRequest() {
-		while(!requestPending) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		System.out.println("Moving elevator to floor " + event.getDestinationFloor());
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		requestPending = false;
-		
-		notifyAll();
+
+	public synchronized void sendDataToFloor(ControlDate c) {
+		System.out.println("Scheduler is sending info from elevator to floor");
+		floor.receiveDataFromElevator(c);
 	}
 
 	@Override
 	public void run() {
+		while (true) {
 			
+		}
 	}
 }
