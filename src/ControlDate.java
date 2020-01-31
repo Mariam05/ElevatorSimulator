@@ -9,6 +9,7 @@ import java.sql.Time;
 
 public class ElevatorEvent {
 	
+	private Time time;
         private int floor;
 	private boolean floorButton; // true if up, false if down c
 	private int destinationFloor;
@@ -20,7 +21,6 @@ public class ElevatorEvent {
 		this.destinationFloor=destinationFloor;
 	}
 	
-	private Time time;
 	/**
 	 * @return the time
 	 */
