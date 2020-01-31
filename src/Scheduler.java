@@ -20,24 +20,40 @@ public class Scheduler implements Runnable {
 	private void sendRequestToElevator(ControlDate c) {
 		System.out.println("Scheduler is sending info from floor to elevator");
 		elev.receiveFloorInfo(c);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void sendDataToFloor(ControlDate c) {
 		System.out.println("Scheduler is sending info from elevator to floor");
 		floor.receiveDataFromElevator(c);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void run() {
 		while (true) {
+
 			Object[] data = buffer.getData();
-			String source = (String)data[0];
-			ControlDate c = (ControlDate)data[1];
+			
+			String source = (String) data[0];
+			ControlDate c = (ControlDate) data[1];
+			System.out.println("Got to scheduler: " + source + " " + c.getTime());
 			if (source.equalsIgnoreCase("Floor")) {
 				this.sendRequestToElevator(c);
 			} else {
 				this.sendDataToFloor(c);
 			}
+
 		}
 	}
 }

@@ -5,17 +5,18 @@ public class Buffer {
 	private boolean requestIn;
 	private boolean elevDataIn;
 	private Object[] toScheduler;
-	private boolean requestSent;
+	private boolean sendRequest;
 
 	public Buffer() {
 		toScheduler = new Object[2];
 		requestIn = false;
 		elevDataIn = false;
-		requestSent = false;
+		sendRequest = false;
 	}
 
 	public synchronized void putFloorRequest(ControlDate request) {
-		while (requestIn && elevDataIn) {
+		System.out.println("Here");
+		while (elevDataIn || sendRequest ) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -26,32 +27,36 @@ public class Buffer {
 		this.request = request;
 
 		requestIn = true;
-		requestSent = false;
+		sendRequest = true;
 
 		notifyAll();
 	}
 
 	public synchronized void putElevatorData(ControlDate data) {
-		System.out.println("Got here");
-		while (!requestIn || elevDataIn) {
+		while (requestIn || sendRequest) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-
-		System.out.println("Data In");
+		
 		this.data = data;
+		try {
+			Thread.sleep(500); 
+		} catch (InterruptedException e) {
+
+		}
 
 		elevDataIn = true;
+		sendRequest = true;
 
 		notifyAll();
 
 	}
-
+	
 	public synchronized Object[] getData() {
-		while (!requestIn && !elevDataIn) {
+		while (!sendRequest) { //!requestIn && !elevDataIn || 
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -59,14 +64,19 @@ public class Buffer {
 				e.printStackTrace();
 			}
 		}
+		
+		sendRequest = false;
+		
 		if (requestIn) {
 			toScheduler[0] = "Floor";
 			toScheduler[1] = request;
+			requestIn = false;
 		}
 
 		if (elevDataIn) {
 			toScheduler[0] = "Elevator";
 			toScheduler[1] = data;
+			elevDataIn = false;
 		}
 
 		try {
@@ -76,9 +86,7 @@ public class Buffer {
 			e.printStackTrace();
 		}
 
-		requestSent = true;
-		requestIn = false;
-		elevDataIn = false;
+		
 		
 		notifyAll();
 

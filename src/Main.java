@@ -10,7 +10,7 @@ public class Main {
 		
 		Thread fThread = new Thread(f, "Floor");
 		Thread eThread = new Thread(e, "Elevator");
-		Thread sThread = new Thread(s, "Schduler");
+		Thread sThread = new Thread(s, "Scheduler");
 		
 		fThread.start();
 		eThread.start();

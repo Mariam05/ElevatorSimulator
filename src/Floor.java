@@ -25,7 +25,7 @@ public class Floor implements Runnable {
 
 	public Floor(Buffer buffer) {
 		this.buffer = buffer;
-		this.receivedData = true; //initialized to true so that it runs the first time
+		this.receivedData = true; // initialized to true so that it runs the first time
 		this.file = new File("data.txt");
 		this.datas = new ArrayList<ControlDate>();
 		sdf = new SimpleDateFormat("hh:mm:ss.mmm");
@@ -84,7 +84,7 @@ public class Floor implements Runnable {
 	}
 
 	public void receiveDataFromElevator(ControlDate c) {
-		System.out.format("Floor received elevator info from scheduler: moved from floor %d to %d\n", c.getFloor(),
+		System.out.format("Floor received elevator info from scheduler: moved from floor %d to %d\n\n", c.getFloor(),
 				c.getDestinationFloor());
 		this.receivedData = true;
 
@@ -93,12 +93,16 @@ public class Floor implements Runnable {
 	@Override
 	public void run() {
 		for (ControlDate c : datas) {
-			while(!receivedData) {} // wait until you receive data back
-			 if(receivedData) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (receivedData) {
 				buffer.putFloorRequest(c);
 				receivedData = false;
 			}
-
 		}
 
 	}

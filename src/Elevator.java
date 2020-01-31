@@ -17,14 +17,29 @@ public class Elevator implements Runnable {
 	public void receiveFloorInfo(ControlDate c) {
 		System.out.format("Elevator received floor request from scheduler: moving from floor %d to %d\n", c.getFloor(),
 				c.getDestinationFloor());
+
 		this.c = c;
+//		try {
+//			Thread.sleep(4000);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		this.dataIn = true;
+
 	}
 
 	@Override
 	public void run() {
 		while (true) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			if (dataIn) {
+				System.out.println("In elevator: " + c.getDestinationFloor());
 				buffer.putElevatorData(c);
 				dataIn = false;
 			}
