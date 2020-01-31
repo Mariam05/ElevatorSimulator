@@ -19,12 +19,6 @@ public class Elevator implements Runnable {
 				c.getDestinationFloor());
 
 		this.c = c;
-//		try {
-//			Thread.sleep(4000);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 		this.dataIn = true;
 
 	}
@@ -39,7 +33,6 @@ public class Elevator implements Runnable {
 				e.printStackTrace();
 			}
 			if (dataIn) {
-				System.out.println("In elevator: " + c.getDestinationFloor());
 				buffer.putElevatorData(c);
 				dataIn = false;
 			}

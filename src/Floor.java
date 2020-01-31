@@ -4,6 +4,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class Floor implements Runnable {
 	/**
@@ -19,6 +21,7 @@ public class Floor implements Runnable {
 	private boolean floorButton; // true if up, false if down c
 	private int destinationFloor;
 	private ArrayList<ControlDate> datas;
+	private Queue<ControlDate> requestQueue;
 	private SimpleDateFormat sdf;
 	private Buffer buffer;
 	private boolean receivedData;
@@ -28,6 +31,7 @@ public class Floor implements Runnable {
 		this.receivedData = true; // initialized to true so that it runs the first time
 		this.file = new File("data.txt");
 		this.datas = new ArrayList<ControlDate>();
+		this.requestQueue = new LinkedList<>();
 		sdf = new SimpleDateFormat("hh:mm:ss.mmm");
 		getDataFromFile();
 
@@ -67,6 +71,7 @@ public class Floor implements Runnable {
 				}
 
 				datas.add(new ControlDate(time, floor, floorButton, destinationFloor));
+				requestQueue.add(new ControlDate(time, floor, floorButton, destinationFloor));
 			}
 
 			br.close();
@@ -92,16 +97,18 @@ public class Floor implements Runnable {
 
 	@Override
 	public void run() {
-		for (ControlDate c : datas) {
+		while (!requestQueue.isEmpty()) {
+			
+			if (receivedData) {
+				buffer.putFloorRequest(requestQueue.remove());
+				receivedData = false;
+			}
+			
 			try {
-				Thread.sleep(500);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
-			if (receivedData) {
-				buffer.putFloorRequest(c);
-				receivedData = false;
 			}
 		}
 

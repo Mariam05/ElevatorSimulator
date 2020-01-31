@@ -15,7 +15,6 @@ public class Buffer {
 	}
 
 	public synchronized void putFloorRequest(ControlDate request) {
-		System.out.println("Here");
 		while (elevDataIn || sendRequest ) {
 			try {
 				wait();
@@ -23,7 +22,6 @@ public class Buffer {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("Request in");
 		this.request = request;
 
 		requestIn = true;
@@ -42,11 +40,6 @@ public class Buffer {
 		}
 		
 		this.data = data;
-		try {
-			Thread.sleep(500); 
-		} catch (InterruptedException e) {
-
-		}
 
 		elevDataIn = true;
 		sendRequest = true;
@@ -78,15 +71,6 @@ public class Buffer {
 			toScheduler[1] = data;
 			elevDataIn = false;
 		}
-
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		
 		
 		notifyAll();
 

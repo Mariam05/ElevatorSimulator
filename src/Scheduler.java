@@ -47,7 +47,6 @@ public class Scheduler implements Runnable {
 			
 			String source = (String) data[0];
 			ControlDate c = (ControlDate) data[1];
-			System.out.println("Got to scheduler: " + source + " " + c.getTime());
 			if (source.equalsIgnoreCase("Floor")) {
 				this.sendRequestToElevator(c);
 			} else {
