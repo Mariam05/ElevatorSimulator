@@ -1,6 +1,24 @@
 import java.sql.Time;
 
-public class ControlDate {
+/**
+ * This class will be used to created event objects.
+ * Each event object will have the following attributes associated with it:
+ * Time, Floor or elevator number, button
+ * 
+ */
+
+public class ElevatorEvent {
+	
+        private int floor;
+	private boolean floorButton; // true if up, false if down c
+	private int destinationFloor;
+	
+	public ControlDate(Time time, int floor, boolean floorButton, int destinationFloor) {
+		this.time=time;
+		this.floor=floor;
+		this.floorButton=floorButton;
+		this.destinationFloor=destinationFloor;
+	}
 	
 	private Time time;
 	/**
@@ -31,16 +49,6 @@ public class ControlDate {
 		return destinationFloor;
 	}
 
-	private int floor;
-	private boolean floorButton; // true if up, false if down c
-	private int destinationFloor;
-	
-	public ControlDate(Time time, int floor, boolean floorButton, int destinationFloor) {
-		this.time=time;
-		this.floor=floor;
-		this.floorButton=floorButton;
-		this.destinationFloor=destinationFloor;
-	}
-	
 
+	
 }
