@@ -30,6 +30,7 @@ public class Floor implements Runnable{
 	}
 	
 	private void getDataFromFile() {
+		
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			String str;
@@ -37,8 +38,6 @@ public class Floor implements Runnable{
 				//System.out.println(str);
 				String[] x = str.split(" ");
 				for(int i=0;i<x.length;i++) {
-					
-					
 					if(i==0) {
 						//time
 						date = sdf.parse(x[i]);
@@ -62,11 +61,10 @@ public class Floor implements Runnable{
 						destinationFloor = Integer.parseInt(x[i]);
 					}
 				}
-				
 			
 			datas.add(new ControlDate(time,floor,floorButton,destinationFloor));
 			}
-			//System.out.print(datas.get(3).getTime());
+		
 			br.close();
 			
 		} catch (FileNotFoundException e) {
@@ -87,9 +85,9 @@ public class Floor implements Runnable{
 			s.putRequest(c);
 		}
 		
-		
 	}
 
+	
 }
 
 
