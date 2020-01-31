@@ -7,14 +7,14 @@ import java.sql.Time;
  * 
  */
 
-public class ElevatorEvent {
+public class elevatorEvent {
 	
 	private Time time;
         private int floor;
 	private boolean floorButton; // true if up, false if down c
 	private int destinationFloor;
 	
-	public ControlDate(Time time, int floor, boolean floorButton, int destinationFloor) {
+	public elevatorEvent(Time time, int floor, boolean floorButton, int destinationFloor) {
 		this.time=time;
 		this.floor=floor;
 		this.floorButton=floorButton;
