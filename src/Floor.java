@@ -18,14 +18,18 @@ public class Floor implements Runnable{
 	private int destinationFloor;
 	private ArrayList<ControlDate> datas;
 	private SimpleDateFormat sdf;
-	public Floor() {
-		this.file = new File("/Users/admin/eclipse-workspace/SYSC3303Project/data.txt");
+	private Scheduler s;
+	
+	public Floor(Scheduler s) {
+		this.s = s;
+		this.file = new File("data.txt");
 		this.datas = new ArrayList<ControlDate>();
 		sdf = new SimpleDateFormat("hh:mm:ss.mmm");
+		getDataFromFile();
+
 	}
-	@Override
-	public void run() {
-		
+	
+	private void getDataFromFile() {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			String str;
@@ -33,6 +37,8 @@ public class Floor implements Runnable{
 				//System.out.println(str);
 				String[] x = str.split(" ");
 				for(int i=0;i<x.length;i++) {
+					
+					
 					if(i==0) {
 						//time
 						date = sdf.parse(x[i]);
@@ -56,9 +62,11 @@ public class Floor implements Runnable{
 						destinationFloor = Integer.parseInt(x[i]);
 					}
 				}
+				
+			
 			datas.add(new ControlDate(time,floor,floorButton,destinationFloor));
 			}
-			System.out.print(datas.get(3).getTime());
+			//System.out.print(datas.get(3).getTime());
 			br.close();
 			
 		} catch (FileNotFoundException e) {
@@ -72,18 +80,16 @@ public class Floor implements Runnable{
 		}
 		
 	}
-	
-	private Time valueOf(String string) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	public static void main(String[] args) {
-		Thread f = new Thread(new Floor());
-		f.start();
+
+	@Override
+	public void run() {
+		for (ControlDate c : datas) {
+			s.putRequest(c);
+		}
+		
 		
 	}
 
-	
 }
 
 
