@@ -1,59 +1,88 @@
 
 public class Buffer {
 
-	private Scheduler scheduler;
 	private ControlDate request, data;
 	private boolean requestIn;
+	private boolean elevDataIn;
 	private Object[] toScheduler;
+	private boolean requestSent;
 
 	public Buffer() {
 		toScheduler = new Object[2];
 		requestIn = false;
+		elevDataIn = false;
+		requestSent = false;
 	}
 
 	public synchronized void putFloorRequest(ControlDate request) {
-		while (requestIn) {
+		while (requestIn && elevDataIn) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
+		System.out.println("Request in");
 		this.request = request;
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 		requestIn = true;
+		requestSent = false;
+
 		notifyAll();
 	}
 
 	public synchronized void putElevatorData(ControlDate data) {
-		while (!requestIn) {
+		System.out.println("Got here");
+		while (!requestIn || elevDataIn) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
+
+		System.out.println("Data In");
 		this.data = data;
-		
-		requestIn = false;
+
+		elevDataIn = true;
+
+		notifyAll();
+
+	}
+
+	public synchronized Object[] getData() {
+		while (!requestIn && !elevDataIn) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if (requestIn) {
+			toScheduler[0] = "Floor";
+			toScheduler[1] = request;
+		}
+
+		if (elevDataIn) {
+			toScheduler[0] = "Elevator";
+			toScheduler[1] = data;
+		}
+
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+		requestSent = true;
+		requestIn = false;
+		elevDataIn = false;
 		
 		notifyAll();
-		
-	}
-	
-	public synchronized void getData() {
-		
+
+		return toScheduler;
 	}
 
 }

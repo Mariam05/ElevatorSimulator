@@ -17,12 +17,12 @@ public class Scheduler implements Runnable {
 		this.buffer = buffer;
 	}
 
-	public synchronized void sendRequestToElevator(ControlDate c) {
+	private void sendRequestToElevator(ControlDate c) {
 		System.out.println("Scheduler is sending info from floor to elevator");
 		elev.receiveFloorInfo(c);
 	}
 
-	public synchronized void sendDataToFloor(ControlDate c) {
+	private void sendDataToFloor(ControlDate c) {
 		System.out.println("Scheduler is sending info from elevator to floor");
 		floor.receiveDataFromElevator(c);
 	}
@@ -30,7 +30,14 @@ public class Scheduler implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
-			
+			Object[] data = buffer.getData();
+			String source = (String)data[0];
+			ControlDate c = (ControlDate)data[1];
+			if (source.equalsIgnoreCase("Floor")) {
+				this.sendRequestToElevator(c);
+			} else {
+				this.sendDataToFloor(c);
+			}
 		}
 	}
 }
