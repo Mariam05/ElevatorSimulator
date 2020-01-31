@@ -3,16 +3,17 @@ public class Elevator implements Runnable{
 	
 	private int id;
 	private Scheduler scheduler;
+	private int currFloor;
 
-	public Elevator (Scheduler scheduler, int id) {
+	public Elevator (Scheduler scheduler) {
 		this.scheduler = scheduler;
-		this.id = id;
+		this.currFloor = 0;
 	}
 
 	@Override
 	public void run() {
 		while(true) {
-			scheduler.elevatorMoveRequest(id);
+			scheduler.getRequest();
 		}
 		
 	}
