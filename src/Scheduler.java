@@ -2,70 +2,57 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class Scheduler implements Runnable {
-	
+
 	private Floor floor;
 	private Elevator elev;
 	private boolean requestPending;
-	
+	private Buffer buffer;
+
 	private ControlDate event;
 
-	public Scheduler() {
+	public Scheduler(Floor floor, Elevator elevator, Buffer buffer) {
 		requestPending = false;
+		this.floor = floor;
+		this.elev = elevator;
+		this.buffer = buffer;
 	}
-	
-	/**
-	 * send request from floor to Scheduler
-	 * @param ee
-	 */
-	public synchronized void putRequest(ControlDate ee) {
-		while(requestPending) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		this.event = ee;
-		System.out.println("Sending a request from floor " + ee.getFloor());
+
+	private void sendRequestToElevator(ControlDate c) {
+		System.out.println("Scheduler is sending info from floor to elevator");
+		elev.receiveFloorInfo(c);
 		try {
-			Thread.sleep(1000); //give the request some time 
+			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		requestPending = true;
-		notifyAll();
-		
-		
 	}
-	
-	/**
-	 * get request from the Scheduler to elevator, to let the elevator move
-	 */
-	public synchronized void getRequest() {
-		while(!requestPending) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		System.out.println("Moving elevator to floor " + event.getDestinationFloor());
+
+	private void sendDataToFloor(ControlDate c) {
+		System.out.println("Scheduler is sending info from elevator to floor");
+		floor.receiveDataFromElevator(c);
 		try {
-			Thread.sleep(2000);
+			Thread.sleep(1000);
 		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		requestPending = false;
-		
-		notifyAll();
 	}
 
 	@Override
 	public void run() {
+		while (true) {
+
+			Object[] data = buffer.getData();
 			
+			String source = (String) data[0];
+			ControlDate c = (ControlDate) data[1];
+			if (source.equalsIgnoreCase("Floor")) {
+				this.sendRequestToElevator(c);
+			} else {
+				this.sendDataToFloor(c);
+			}
+
+		}
 	}
 }

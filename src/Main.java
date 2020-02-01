@@ -1,14 +1,20 @@
 
 public class Main {
 	public static void main(String[] args) {
-		Scheduler s = new Scheduler();
-		Thread f = new Thread(new Floor(s));
-		Thread sThread = new Thread(s);
-		Thread e = new Thread(new Elevator(s));
 		
+		Buffer b = new Buffer();
+		Floor f = new Floor(b);
+		Elevator e = new Elevator(b);
+		
+		Scheduler s = new Scheduler(f,e,b);
+		
+		Thread fThread = new Thread(f, "Floor");
+		Thread eThread = new Thread(e, "Elevator");
+		Thread sThread = new Thread(s, "Scheduler");
+		
+		fThread.start();
+		eThread.start();
 		sThread.start();
-		f.start();
-		e.start();
 		
 
 	}
