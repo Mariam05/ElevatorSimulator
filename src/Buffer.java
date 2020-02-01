@@ -1,12 +1,42 @@
-
+/**
+ * this class helps to facilitate the communication between the Floor class and
+ * the Elevator class, handles sending requests
+ * 
+ * @version 01 Feb 2020
+ * @author Mariam Almalki, Ruqaya Almalki
+ *
+ */
 public class Buffer {
 
+	/**
+	 * request contains the information the floor wants to send; data contains the
+	 * information the elevator wants to send
+	 */
 	private ControlDate request, data;
+
+	/**
+	 * requestIn determines if there is a request to be processed or not
+	 */
 	private boolean requestIn;
+
+	/**
+	 * elevDataIn determines if the elevator has data they are sending
+	 */
 	private boolean elevDataIn;
+
+	/**
+	 * array containing information needed to be forwarded to scheduler
+	 */
 	private Object[] toScheduler;
+
+	/**
+	 * determines if request is sent
+	 */
 	private boolean sendRequest;
 
+	/**
+	 * Constructor initializes all class variables
+	 */
 	public Buffer() {
 		toScheduler = new Object[2];
 		requestIn = false;
@@ -14,8 +44,13 @@ public class Buffer {
 		sendRequest = false;
 	}
 
+	/**
+	 * method used to send information from the floor to the scheduler
+	 * 
+	 * @param request contains information about the desired event
+	 */
 	public synchronized void putFloorRequest(ControlDate request) {
-		while (elevDataIn || sendRequest ) {
+		while (elevDataIn || sendRequest) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -30,6 +65,11 @@ public class Buffer {
 		notifyAll();
 	}
 
+	/**
+	 * method used to send information from the elevator to the scheduler
+	 * 
+	 * @param data contains the information about the event
+	 */
 	public synchronized void putElevatorData(ControlDate data) {
 		while (requestIn || sendRequest) {
 			try {
@@ -38,7 +78,7 @@ public class Buffer {
 				e.printStackTrace();
 			}
 		}
-		
+
 		this.data = data;
 
 		elevDataIn = true;
@@ -47,19 +87,23 @@ public class Buffer {
 		notifyAll();
 
 	}
-	
+
+	/**
+	 * method used by the scheduler to receive data the Floor/Elevator sent
+	 * 
+	 * @return an object containing who sent the data and the corresponding data
+	 */
 	public synchronized Object[] getData() {
-		while (!sendRequest) { //!requestIn && !elevDataIn || 
+		while (!sendRequest) { // !requestIn && !elevDataIn ||
 			try {
 				wait();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		
+
 		sendRequest = false;
-		
+
 		if (requestIn) {
 			toScheduler[0] = "Floor";
 			toScheduler[1] = request;
@@ -71,7 +115,7 @@ public class Buffer {
 			toScheduler[1] = data;
 			elevDataIn = false;
 		}
-		
+
 		notifyAll();
 
 		return toScheduler;
