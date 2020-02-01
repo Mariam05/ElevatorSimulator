@@ -4,7 +4,7 @@
 
 Purpose of Project: design and implement an elevator control system and simulator
 
-Authors: Defa Hu, Zewen Chen, Henrry Wilson, Mariam Almalki, Ruqaya Malki
+Authors: Defa Hu, Zewen Chen, Henrry Wilson, Mariam Almalki, Ruqaya Almalki
 
 #### Contents of this ReadMe
 - Iteration Description
@@ -44,5 +44,5 @@ Simply run the Main() class. Each class will output a print statement on the con
 
 ### UML Class Diagram
 This can also be found as a png file in the project zip file. <br>
-![UML](name_of_uml_img.png)
+![UML](UML_ClassDiagram_Iteration1 (1).png)
 
