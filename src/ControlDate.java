@@ -38,7 +38,7 @@ public class ControlDate {
 	/**
 	 * @return the floorButton
 	 */
-	public boolean isFloorButton() {
+	public boolean getFloorButton() {
 		return floorButton;
 	}
 

@@ -10,6 +10,8 @@ import java.util.Queue;
  *
  */
 public class Scheduler implements Runnable {
+	ControlDate c;
+	String source;
 
 	/**
 	 * the floor object that is receiving/sending information
@@ -68,6 +70,13 @@ public class Scheduler implements Runnable {
 			e.printStackTrace();
 		}
 	}
+	public ControlDate getDate() {
+		return this.c;
+	}
+	public String getSource() {
+		return this.source;
+	}
+	
 
 	/**
 	 * overrides the run method from the Runnable interface 
@@ -80,8 +89,8 @@ public class Scheduler implements Runnable {
 
 			Object[] data = buffer.getData();
 
-			String source = (String) data[0];
-			ControlDate c = (ControlDate) data[1];
+			this.source = (String) data[0];
+			this.c = (ControlDate) data[1];
 			if (source.equalsIgnoreCase("Floor")) {
 				this.sendRequestToElevator(c);
 			} else {

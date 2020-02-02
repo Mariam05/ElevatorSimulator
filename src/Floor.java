@@ -10,7 +10,7 @@ import java.util.Queue;
 public class Floor implements Runnable {
 	/**
 	 * this class store read in event Time, floor or elevator number, and button
-	 * into a list of ControlData structure
+	 * into a list of ControlData stcture
 	 * 
 	 * @author Zewen Chen
 	 */
@@ -32,7 +32,7 @@ public class Floor implements Runnable {
 		this.file = new File("data.txt");
 		this.datas = new ArrayList<ControlDate>();
 		this.requestQueue = new LinkedList<>();
-		sdf = new SimpleDateFormat("hh:mm:ss.mmm");
+		sdf = new SimpleDateFormat("hh:mm:ss.S");
 		getDataFromFile();
 
 	}
@@ -79,8 +79,10 @@ public class Floor implements Runnable {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ParseException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -91,6 +93,10 @@ public class Floor implements Runnable {
 				c.getDestinationFloor());
 		this.receivedData = true;
 
+	}
+	
+	public ControlDate getData(int i) {
+		return this.datas.get(i);
 	}
 
 	@Override
@@ -105,6 +111,7 @@ public class Floor implements Runnable {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

@@ -22,6 +22,9 @@ public class Elevator implements Runnable {
 		this.dataIn = true;
 
 	}
+	public ControlDate getDate() {
+		return this.c;
+	}
 
 	@Override
 	public void run() {
@@ -29,6 +32,7 @@ public class Elevator implements Runnable {
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			if (dataIn) {
