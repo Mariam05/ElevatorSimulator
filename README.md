@@ -40,7 +40,7 @@ DESCRIPTION:
 Simply run the Main() class. Each class will output a print statement on the console describing the action it is taking. 
 
 ### Test Instructions 
-- [[explanation of how the test case works goes here]]
+Test cases are standard JUnit Tests. Right click from file tree in Package Explorer, and Run As -> JUnit Test. Be mindful that SchedulerTest takes some time to complete.
 
 ### UML Class Diagram
 This can also be found as a png file in the project zip file. <br>
