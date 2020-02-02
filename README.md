@@ -30,10 +30,12 @@ DESCRIPTION:
 **Mariam Almalki** : Scheduler & Buffer <br>
 
 ### Explanation of File Names
-- **Floor**: Every time the buffer is free and it gets data back from the elevator (via scheduler), the floor sends in a new request. 
+- **Floor**: Every time the buffer is free and it gets data back from the elevator (via scheduler), the floor sends in a new request.
+- **FloorTest**: JUnit test for the above class.
 - **Elevator**: The elevator keeps trying to put data in the buffer and is successful only when it receives a request from the scheduler
 - **Buffer**: The Elevators and Floor are constantly polling the buffer to see if they can send their requests / data. It controls who has access to sending the request / data (only one at a time)
 - **Scheduler**: The Scheduler is responsible for constantly polling the buffer to see if there is data for it to send. If there is, it sends it to the appropriate class. 
+- **SchedulerTest**: JUnit test for the above class.
 - **Main**: This class is used to instantiate and start the threads and buffer. 
 
 ### Set-up Instructions
