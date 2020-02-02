@@ -48,4 +48,24 @@ public class ControlDate {
 	public int getDestinationFloor() {
 		return destinationFloor;
 	}
+	
+	/**
+	 * checks if ControlDate objects are equal
+	 */
+	public boolean equals(Object o) {
+		if (o == this) { 
+            return true; 
+        } 
+        if (!(o instanceof ControlDate)) { 
+            return false; 
+        } 
+           
+        ControlDate c = (ControlDate) o; 
+          
+        // Compare the data members and return accordingly  
+        return (this.getTime()).equals(c.getTime())
+                && Integer.compare(this.floor, c.floor) == 0
+                && this.floorButton == c.floorButton
+                && Integer.compare(this.destinationFloor, c.destinationFloor) == 0; 
+	}
 }
