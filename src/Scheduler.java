@@ -1,6 +1,3 @@
-import java.util.LinkedList;
-import java.util.Queue;
-
 /**
  * this class facilitates the communication between the Floor class and the
  * Elevator class
@@ -70,31 +67,41 @@ public class Scheduler implements Runnable {
 			e.printStackTrace();
 		}
 	}
+
+	/**
+	 * gets the controlDate object for testing purposes
+	 * 
+	 * @return the controlDate object
+	 */
 	public ControlDate getDate() {
 		return this.c;
 	}
+
+	/**
+	 * gets the source of the message
+	 * 
+	 * @return Floor of Elevator depending on who is sending/receiving the message
+	 */
 	public String getSource() {
 		return this.source;
 	}
-	
 
 	/**
 	 * overrides the run method from the Runnable interface 
-	 * continuously gets data from the buffer to send to the 
-	 * corresponding floor/elevator
+	 * continuously gets data from the buffer to send to the corresponding floor/elevator
 	 */
 	@Override
 	public void run() {
 		while (true) {
 
-			Object[] data = buffer.getData();
+			Object[] data = buffer.getData(); //get the data
 
-			this.source = (String) data[0];
-			this.c = (ControlDate) data[1];
+			this.source = (String) data[0]; //find the source:Floor/Elevator
+			this.c = (ControlDate) data[1]; //get required information
 			if (source.equalsIgnoreCase("Floor")) {
-				this.sendRequestToElevator(c);
+				this.sendRequestToElevator(c); //send floor info to elevator
 			} else {
-				this.sendDataToFloor(c);
+				this.sendDataToFloor(c); //send elevator info to floor
 			}
 
 		}

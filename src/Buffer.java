@@ -50,7 +50,7 @@ public class Buffer {
 	 * @param request contains information about the desired event
 	 */
 	public synchronized void putFloorRequest(ControlDate request) {
-		while (elevDataIn || sendRequest) {
+		while (elevDataIn || sendRequest) { //request is being processed
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -71,7 +71,7 @@ public class Buffer {
 	 * @param data contains the information about the event
 	 */
 	public synchronized void putElevatorData(ControlDate data) {
-		while (requestIn || sendRequest) {
+		while (requestIn || sendRequest) { //request is being proccessed
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -104,13 +104,13 @@ public class Buffer {
 
 		sendRequest = false;
 
-		if (requestIn) {
+		if (requestIn) { //floor is sending the request
 			toScheduler[0] = "Floor";
 			toScheduler[1] = request;
 			requestIn = false;
 		}
 
-		if (elevDataIn) {
+		if (elevDataIn) { //elevator is sending the request
 			toScheduler[0] = "Elevator";
 			toScheduler[1] = data;
 			elevDataIn = false;
