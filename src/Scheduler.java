@@ -11,10 +11,6 @@ enum States {
 	SENDING, RECEIVING, IDLE
 }
 
-//enum Events {
-//	RECEIVING_ELEVATOR, RECEIVING_FLOOR, FLOOR_SENDING, ELEVATOR_SENDING
-//}
-
 public class Scheduler implements Runnable {
 
 	private static States state = States.IDLE; // starts off as idle;
@@ -106,33 +102,27 @@ public class Scheduler implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
-//			System.out.println("run method is going on");
-
-//			System.out.println("event: " + buffer.getEvent());
-//			System.out.println("state: " + Scheduler.state);
 
 			Object[] data = buffer.getData(); // get the data
 
 			switch (state) {// going through states of machine
 
 			case IDLE: {
-				// if(state == States.IDLE) {
-				//System.out.println("in idle");
-				if (buffer.getEvent() == Events.RECEIVING_FLOOR) { // floor is sending a request
+				if (buffer.getEvent() == Events.RECEIVING_FLOOR) { 
 					state = States.RECEIVING;
-				} else if (buffer.getEvent() == Events.RECEIVING_ELEVATOR) { // elevator is sending response
+				} else if (buffer.getEvent() == Events.RECEIVING_ELEVATOR) {
 					state = States.RECEIVING;
 				} else if (buffer.getEvent() == Events.WAITING) {
 					state = States.IDLE;
 				}
-				System.out.println("state: " + Scheduler.state);
+
 				System.out.println("event: " + buffer.getEvent());
-				//break;
+				System.out.println("state: " + Scheduler.state);
+
+				// break;
 
 			}
 			case RECEIVING: {
-				// if(state == States.RECEIVING) {
-				//System.out.println("in receiving");
 				if (buffer.getEvent() == Events.RECEIVING_FLOOR) { // scheduler needs to send
 					state = States.SENDING;
 					buffer.setEvent(Events.FLOOR_SENDING);
@@ -140,13 +130,13 @@ public class Scheduler implements Runnable {
 					state = States.SENDING;
 					buffer.setEvent(Events.ELEVATOR_SENDING);
 				}
-				System.out.println("state: " + Scheduler.state);
+
 				System.out.println("event: " + buffer.getEvent());
-				//break;
+				System.out.println("state: " + Scheduler.state);
+				// break;
 			}
 
 			case SENDING: {
-				// if(state == States.SENDING) {
 				if (buffer.getEvent() == Events.FLOOR_SENDING) { // send data to floor
 					this.sendRequestToElevator((ControlDate) data[1]);
 					state = States.IDLE;
@@ -156,18 +146,13 @@ public class Scheduler implements Runnable {
 					state = States.IDLE;
 					buffer.setEvent(Events.WAITING);
 				}
-				System.out.println("state: " + Scheduler.state);
+
 				System.out.println("event: " + buffer.getEvent());
-				//break;
+				System.out.println("state: " + Scheduler.state);
+				// break;
 			}
 
 			}// end switch
-
-//			try { //wait till next cycle
-//				Thread.sleep(1000);
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
 
 		}
 	}
