@@ -6,7 +6,13 @@
  * @author Mariam Almalki, Ruqaya Almalki
  *
  */
+
+enum Events {
+		RECEIVING_ELEVATOR, RECEIVING_FLOOR, FLOOR_SENDING, ELEVATOR_SENDING, WAITING
+}
+
 public class Buffer {
+	private static Events event = Events.WAITING; //initially just waiting to receive/send something
 
 	/**
 	 * request contains the information the floor wants to send; data contains the
@@ -42,6 +48,15 @@ public class Buffer {
 		requestIn = false;
 		elevDataIn = false;
 		sendRequest = false;
+		event = Events.WAITING;
+	}
+	
+	public Events getEvent() {
+		return Buffer.event;
+	}
+	
+	public void setEvent(Events e) {
+		event = e; 
 	}
 
 	/**
@@ -57,6 +72,7 @@ public class Buffer {
 				e.printStackTrace();
 			}
 		}
+		event = Events.RECEIVING_FLOOR;
 		this.request = request;
 
 		requestIn = true;
@@ -95,7 +111,7 @@ public class Buffer {
 	 */
 	public synchronized Object[] getData() {
 		while (!sendRequest) { // !requestIn && !elevDataIn ||
-			try {
+			try { 
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -108,12 +124,14 @@ public class Buffer {
 			toScheduler[0] = "Floor";
 			toScheduler[1] = request;
 			requestIn = false;
+			event = Events.RECEIVING_FLOOR;
 		}
 
 		if (elevDataIn) { //elevator is sending the request
 			toScheduler[0] = "Elevator";
 			toScheduler[1] = data;
 			elevDataIn = false;
+			event = Events.RECEIVING_ELEVATOR;
 		}
 
 		notifyAll();
