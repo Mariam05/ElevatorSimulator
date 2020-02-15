@@ -93,7 +93,7 @@ public class Scheduler implements Runnable {
 			this.c = (ControlDate) data[1];
 			if (source.equalsIgnoreCase("Floor")) {
 				System.out.println("Action:'open button pressed'");
-				elev.pressDoorOpenButton();
+				elev.pressDoorOpenButton();//these method should be synchronized afterward(adding conditions, so that no button press with no action respond)
 				System.out.println("Action:'close button pressed'");
 				elev.pressDoorCloseButton();
 				System.out.println("Action:'a floor button pressed'");

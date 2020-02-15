@@ -70,6 +70,8 @@ public class Elevator implements Runnable {
 	 *     |                                                    |
 	 *     moving-----------------------------------------------+  
 	 *     					reach desFloor
+	 *     
+	 *     the state diagram
 	 */
 	
 	
