@@ -92,6 +92,11 @@ public class Scheduler implements Runnable {
 			this.source = (String) data[0];
 			this.c = (ControlDate) data[1];
 			if (source.equalsIgnoreCase("Floor")) {
+				System.out.println("Action:'open button pressed'");
+				elev.pressDoorOpenButton();
+				System.out.println("Action:'close button pressed'");
+				elev.pressDoorCloseButton();
+				System.out.println("Action:'a floor button pressed'");
 				this.sendRequestToElevator(c);
 			} else {
 				this.sendDataToFloor(c);
