@@ -33,6 +33,7 @@ DESCRIPTION:
 - **Floor**: Every time the buffer is free and it gets data back from the elevator (via scheduler), the floor sends in a new request.
 - **FloorTest**: JUnit test for the above class.
 - **Elevator**: The elevator keeps trying to put data in the buffer and is successful only when it receives a request from the scheduler
+- **ElevatorTest**: JUnit test for the above class
 - **Buffer**: The Elevators and Floor are constantly polling the buffer to see if they can send their requests / data. It controls who has access to sending the request / data (only one at a time)
 - **Scheduler**: The Scheduler is responsible for constantly polling the buffer to see if there is data for it to send. If there is, it sends it to the appropriate class. 
 - **SchedulerTest**: JUnit test for the above class.
@@ -42,7 +43,7 @@ DESCRIPTION:
 Simply run the Main() class. Each class will output a print statement on the console describing the action it is taking. 
 
 ### Test Instructions 
-Test cases are standard JUnit Tests. Right click from file tree in Package Explorer, and Run As -> JUnit Test. Be mindful that SchedulerTest takes some time to complete.
+Test cases are standard JUnit 4 Tests. Right click on the AllTests() class in the Tests package then Run As -> Junit Test to test all the classes. Be mindful that SchedulerTest takes some time to complete.
 
 ### UML Class Diagram
 This can also be found as a png file in the project zip file. <br>
