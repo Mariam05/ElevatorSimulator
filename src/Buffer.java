@@ -7,6 +7,11 @@
  *
  */
 
+/**
+ * events that causes the scheduler to change states
+ * @author Ruqaya Almalki
+ *
+ */
 enum Events {
 		RECEIVING_ELEVATOR, RECEIVING_FLOOR, FLOOR_SENDING, ELEVATOR_SENDING, WAITING
 }
@@ -51,10 +56,18 @@ public class Buffer {
 		event = Events.WAITING;
 	}
 	
+	/**
+	 * gets the current event
+	 * @return the current event happening
+	 */
 	public Events getEvent() {
 		return Buffer.event;
 	}
 	
+	/**
+	 * sets an event
+	 * @param e is the event that you want to set it to
+	 */
 	public void setEvent(Events e) {
 		event = e; 
 	}
