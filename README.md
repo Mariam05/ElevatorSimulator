@@ -23,11 +23,11 @@ DESCRIPTION:
 
 
 ### Breakdown of Responsibilities
-**Zewen Chen**: Floor class <br>
-**Finn Hu** : Elevator class <br>
-**Henry Wilson** : Test case <br>
-**Ruqaya Almalki**: Scheduler & Buffer <br>
-**Mariam Almalki** : Scheduler & Buffer <br>
+**Zewen Chen**: Elevator State machine <br>
+**Finn Hu** : Sequence Diagram and UML Class Diagram <br>
+**Henry Wilson** : State Diagrams <br>
+**Ruqaya Almalki**: Scheduler State machine <br>
+**Mariam Almalki** : All test cases<br>
 
 ### Explanation of File Names
 - **Floor**: Every time the buffer is free and it gets data back from the elevator (via scheduler), the floor sends in a new request.
