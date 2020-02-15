@@ -30,10 +30,23 @@ public class ElevatorTest {
 	}
 
 	@Test
-	public void test() {
+	public void testMovingState() {
 		System.out.println("Floor: " + date.getFloor());
 		elevator.receiveFloorInfo(date);
 		assertTrue(elevator.state == Elevator.ElevatorState.moving);
+	}
+
+	@Test
+	public void testDoorOpen() {
+		elevator.pressDoorOpenButton();
+		assertTrue(elevator.state == Elevator.ElevatorState.doorOpen);
+		
+	}
+	
+	@Test 
+	public void testDoorClosed() {
+		elevator.pressDoorCloseButton();
+		assertTrue(elevator.state == Elevator.ElevatorState.initial);
 	}
 
 }
