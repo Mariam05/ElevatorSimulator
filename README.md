@@ -1,6 +1,6 @@
 # Elevator Control System and Simulator
 
-#### Iteration 1 - Establish Connection Between the Three Subsystems
+#### Iteration 2 – Adding the Scheduler and Elevator Subsystems
 
 Purpose of Project: design and implement an elevator control system and simulator
 
