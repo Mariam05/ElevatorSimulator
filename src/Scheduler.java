@@ -33,10 +33,6 @@ public class Scheduler implements Runnable {
 	 */
 	ControlDate c;
 
-	/**
-	 * used to store the source of the message (elevator/floor)
-	 */
-	String source;
 
 	/**
 	 * the floor object that is receiving/sending information
@@ -105,15 +101,6 @@ public class Scheduler implements Runnable {
 	 */
 	public ControlDate getDate() {
 		return this.c;
-	}
-
-	/**
-	 * gets the source of the message
-	 * 
-	 * @return Floor of Elevator depending on who is sending/receiving the message
-	 */
-	public String getSource() {
-		return this.source;
 	}
 
 	/**
