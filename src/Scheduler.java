@@ -9,6 +9,7 @@
 
 /**
  * states of the scheduler
+ * 
  * @author Ruqaya Almalki
  *
  */
@@ -17,12 +18,24 @@ enum States {
 }
 
 public class Scheduler implements Runnable {
-
+	/**
+	 * stores the state of the scheduler, it starts off idle
+	 */
 	private static States state = States.IDLE; // starts off as idle;
-	Events e;
+
+	/**
+	 * stores the data being received from the buffer
+	 */
 	private Object[] data;
 
+	/**
+	 * object used to encapsulate the data being sent by the elevator/floor
+	 */
 	ControlDate c;
+
+	/**
+	 * used to store the source of the message (elevator/floor)
+	 */
 	String source;
 
 	/**
@@ -109,15 +122,14 @@ public class Scheduler implements Runnable {
 	 */
 	@Override
 	public void run() {
-		
 
 		while (true) {
 
 			switch (state) {// going through states of machine
 
 			case IDLE: {
-				data = buffer.getData(); //get the data we need 
-				if (buffer.getEvent() == Events.RECEIVING_FLOOR) { 
+				data = buffer.getData(); // get the data we need
+				if (buffer.getEvent() == Events.RECEIVING_FLOOR) {
 					state = States.RECEIVING;
 				} else if (buffer.getEvent() == Events.RECEIVING_ELEVATOR) {
 					state = States.RECEIVING;
@@ -138,11 +150,13 @@ public class Scheduler implements Runnable {
 				} else if (buffer.getEvent() == Events.RECEIVING_ELEVATOR) {
 					state = States.SENDING;
 					buffer.setEvent(Events.ELEVATOR_SENDING);
+				} else if (buffer.getEvent() == Events.WAITING) {
+					state = States.IDLE;
 				}
 
 				System.out.println("sch event: " + buffer.getEvent());
 				System.out.println("sch state: " + Scheduler.state);
-				
+
 				break;
 			}
 
@@ -153,11 +167,13 @@ public class Scheduler implements Runnable {
 				} else if (buffer.getEvent() == Events.ELEVATOR_SENDING) { // send request to elevator
 					this.sendDataToFloor((ControlDate) data[1]);
 					state = States.IDLE;
+				} else if (buffer.getEvent() == Events.WAITING) {
+					state = States.IDLE;
 				}
 
 				System.out.println("sch event: " + buffer.getEvent());
 				System.out.println("sch state: " + Scheduler.state + "\n");
-				
+
 				break;
 			}
 

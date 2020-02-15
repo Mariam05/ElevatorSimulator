@@ -9,15 +9,16 @@
 
 /**
  * events that causes the scheduler to change states
+ * 
  * @author Ruqaya Almalki
  *
  */
 enum Events {
-		RECEIVING_ELEVATOR, RECEIVING_FLOOR, FLOOR_SENDING, ELEVATOR_SENDING, WAITING
+	RECEIVING_ELEVATOR, RECEIVING_FLOOR, FLOOR_SENDING, ELEVATOR_SENDING, WAITING
 }
 
 public class Buffer {
-	private static Events event = Events.WAITING; //initially just waiting to receive/send something
+	private static Events event = Events.WAITING; // initially just waiting to receive/send something
 
 	/**
 	 * request contains the information the floor wants to send; data contains the
@@ -55,21 +56,23 @@ public class Buffer {
 		sendRequest = false;
 		event = Events.WAITING;
 	}
-	
+
 	/**
 	 * gets the current event
+	 * 
 	 * @return the current event happening
 	 */
 	public Events getEvent() {
 		return Buffer.event;
 	}
-	
+
 	/**
 	 * sets an event
+	 * 
 	 * @param e is the event that you want to set it to
 	 */
 	public void setEvent(Events e) {
-		event = e; 
+		event = e;
 	}
 
 	/**
@@ -78,7 +81,7 @@ public class Buffer {
 	 * @param request contains information about the desired event
 	 */
 	public synchronized void putFloorRequest(ControlDate request) {
-		while (elevDataIn || sendRequest) { //request is being processed
+		while (elevDataIn || sendRequest) { // request is being processed
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -100,7 +103,7 @@ public class Buffer {
 	 * @param data contains the information about the event
 	 */
 	public synchronized void putElevatorData(ControlDate data) {
-		while (requestIn || sendRequest) { //request is being proccessed
+		while (requestIn || sendRequest) { // request is being proccessed
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -124,7 +127,7 @@ public class Buffer {
 	 */
 	public synchronized Object[] getData() {
 		while (!sendRequest) { // !requestIn && !elevDataIn ||
-			try { 
+			try {
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -133,14 +136,14 @@ public class Buffer {
 
 		sendRequest = false;
 
-		if (requestIn) { //floor is sending the request
+		if (requestIn) { // floor is sending the request
 			toScheduler[0] = "Floor";
 			toScheduler[1] = request;
 			requestIn = false;
 			event = Events.RECEIVING_FLOOR;
 		}
 
-		if (elevDataIn) { //elevator is sending the request
+		if (elevDataIn) { // elevator is sending the request
 			toScheduler[0] = "Elevator";
 			toScheduler[1] = data;
 			elevDataIn = false;
