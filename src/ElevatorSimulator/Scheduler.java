@@ -1,24 +1,25 @@
 package ElevatorSimulator;
+
 /**
  * this class facilitates the communication between the Floor class and the
  * Elevator class
  * 
- * @version 01 Feb 2020
+ * @version 15 Feb 2020
  * @author Mariam Almalki, Ruqaya Almalki
  *
  */
-
-/**
- * states of the scheduler
- * 
- * @author Ruqaya Almalki
- *
- */
-enum States {
-	SENDING, RECEIVING, IDLE
-}
-
 public class Scheduler implements Runnable {
+
+	/**
+	 * states of the scheduler
+	 * 
+	 * @author Ruqaya Almalki
+	 *
+	 */
+	public enum States {
+		SENDING, RECEIVING, IDLE
+	}
+
 	/**
 	 * stores the state of the scheduler, it starts off idle
 	 */
@@ -33,7 +34,6 @@ public class Scheduler implements Runnable {
 	 * object used to encapsulate the data being sent by the elevator/floor
 	 */
 	ControlDate c;
-
 
 	/**
 	 * the floor object that is receiving/sending information
@@ -63,12 +63,16 @@ public class Scheduler implements Runnable {
 		this.buffer = buffer;
 	}
 
+	public States getState() {
+		return state;
+	}
+
 	/**
 	 * method used to send information from the floor to the elevator
 	 * 
 	 * @param c contains all the information the elevator needs from the floor
 	 */
-	private void sendRequestToElevator(ControlDate c) {
+	public void sendRequestToElevator(ControlDate c) {
 		System.out.println("Scheduler is sending info from floor to elevator\n");
 		elev.receiveFloorInfo(c);
 		buffer.setEvent(Events.WAITING);
@@ -84,7 +88,7 @@ public class Scheduler implements Runnable {
 	 * 
 	 * @param c contains all the information the floor needs from the elevator
 	 */
-	private void sendDataToFloor(ControlDate c) {
+	public void sendDataToFloor(ControlDate c) {
 		System.out.println("Scheduler is sending info from elevator to floor\n");
 		floor.receiveDataFromElevator(c);
 		buffer.setEvent(Events.WAITING);

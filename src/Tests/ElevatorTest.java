@@ -10,6 +10,11 @@ import org.junit.Test;
 
 import ElevatorSimulator.*;
 
+/**
+ * 
+ * @author Mariam Almalki
+ *
+ */
 public class ElevatorTest {
 	
 	private ControlDate date;
