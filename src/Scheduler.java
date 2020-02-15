@@ -141,8 +141,8 @@ public class Scheduler implements Runnable {
 				System.out.println("sch state: " + Scheduler.state + "\n");
 
 				break;
-
 			}
+
 			case RECEIVING: {
 				if (buffer.getEvent() == Events.RECEIVING_FLOOR) { // scheduler needs to send
 					state = States.SENDING;

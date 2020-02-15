@@ -83,12 +83,13 @@ public class Buffer {
 	public synchronized void putFloorRequest(ControlDate request) {
 		while (elevDataIn || sendRequest) { // request is being processed
 			try {
+				event = Events.WAITING;
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		event = Events.RECEIVING_FLOOR;
+	
 		this.request = request;
 
 		requestIn = true;
@@ -105,6 +106,7 @@ public class Buffer {
 	public synchronized void putElevatorData(ControlDate data) {
 		while (requestIn || sendRequest) { // request is being proccessed
 			try {
+				event = Events.WAITING;
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -128,6 +130,7 @@ public class Buffer {
 	public synchronized Object[] getData() {
 		while (!sendRequest) { // !requestIn && !elevDataIn ||
 			try {
+				event = Events.WAITING;
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
