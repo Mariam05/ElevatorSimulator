@@ -1,3 +1,4 @@
+package ElevatorSimulator;
 /**
  * this class helps to facilitate the communication between the Floor class and
  * the Elevator class, handles sending requests

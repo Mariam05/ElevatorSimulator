@@ -1,3 +1,4 @@
+package ElevatorSimulator;
 /**
  * this class facilitates the communication between the Floor class and the
  * Elevator class
