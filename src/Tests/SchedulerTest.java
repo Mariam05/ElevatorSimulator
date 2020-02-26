@@ -17,6 +17,7 @@ import ElevatorSimulator.*;
  * This is the test class for the Scheduler
  * 
  * Current version tests the elevator state when waiting for data to be received. 
+ * The tests have letters in front of them so that they will run in order. 
  * 
  * @version 15 Feb 2020
  * 
@@ -51,7 +52,10 @@ public class SchedulerTest {
 		}
 	}
 
-	
+	/**
+	 * Check that the scheduler is waiting for a response after sending
+	 * a request to the elevator
+	 */
 	@Test
 	public void aTestSendRequestToElevator() {
 		s = new Scheduler(f, e, b);
@@ -59,6 +63,10 @@ public class SchedulerTest {
 		assertTrue(s.getState() == Scheduler.States.IDLE);
 	}
 	
+	/**
+	 * Check that the scheduler is waiting for a request after sending 
+	 * a response to the floor. 
+	 */
 	@Test
 	public void bTestSendDataToFloor() {
 		s.sendDataToFloor(controlDate);

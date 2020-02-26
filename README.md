@@ -1,6 +1,6 @@
 # Elevator Control System and Simulator
 
-#### Iteration 2 – Adding the Scheduler and Elevator Subsystems
+#### Iteration 2: Adding the Scheduler and Elevator Subsystems
 
 Purpose of Project: design and implement an elevator control system and simulator
 
@@ -13,6 +13,8 @@ Authors: Defa Hu, Zewen Chen, Henrry Wilson, Mariam Almalki, Ruqaya Almalki
 - Set-up Instructions
 - Test Instructions 
 - UML Class Diagram
+- UML Sequence Diagram
+- State Machine Diagrams
 
 DESCRIPTION: 
   
@@ -24,7 +26,7 @@ DESCRIPTION:
 
 ### Breakdown of Responsibilities
 **Zewen Chen**: Elevator State machine <br>
-**Finn Hu** : Sequence Diagram and UML Class Diagram <br>
+**Defa Hu** : Sequence Diagram and UML Class Diagram <br>
 **Henry Wilson** : State Diagrams <br>
 **Ruqaya Almalki**: Scheduler State machine <br>
 **Mariam Almalki** : All test cases<br>
@@ -40,12 +42,23 @@ DESCRIPTION:
 - **Main**: This class is used to instantiate and start the threads and buffer. 
 
 ### Set-up Instructions
-Simply run the Main() class. Each class will output a print statement on the console describing the action it is taking. 
+Simply run the Main() class in the ElevatorSimulator package. Each class will output a print statement on the console describing the action it is taking. 
 
 ### Test Instructions 
 Test cases are standard JUnit 4 Tests. Right click on the AllTests() class in the Tests package then Run As -> Junit Test to test all the classes. Be mindful that SchedulerTest takes some time to complete.
 
 ### UML Class Diagram
 This can also be found as a png file in the project zip file. <br>
-![UML](UML_ClassDiagram_Iteration1 (1).png)
+![UML](UML_ClassDiagram_I2.png)
+
+### UML Sequence Diagram
+This can also be found as a png file in the project zip file. <br>
+![SequenceDiagram](SequenceDiagram.png)
+
+### State Machine Diagrams
+These can also be found as a png file in the project zip file. <br>
+![UML](SchedulerStateDiagram.png) 
+<br>
+![UML](ElevatorStateDiagram.png)
+
 
