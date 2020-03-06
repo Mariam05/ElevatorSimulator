@@ -1,3 +1,4 @@
+package src.ElevatorSimulator;
 import java.sql.Time;
 
 public class ControlDate {
@@ -19,6 +20,27 @@ public class ControlDate {
 		this.floor=floor;
 		this.floorButton=floorButton;
 		this.destinationFloor=destinationFloor;
+	}
+
+	/**
+	 * @param floor the floor to set
+	 */
+	public void setFloor(int floor) {
+		this.floor = floor;
+	}
+
+	/**
+	 * @param floorButton the floorButton to set
+	 */
+	public void setFloorButton(boolean floorButton) {
+		this.floorButton = floorButton;
+	}
+
+	/**
+	 * @param destinationFloor the destinationFloor to set
+	 */
+	public void setDestinationFloor(int destinationFloor) {
+		this.destinationFloor = destinationFloor;
 	}
 
 	/**

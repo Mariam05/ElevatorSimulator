@@ -1,0 +1,64 @@
+# Elevator Control System and Simulator
+
+#### Iteration 2: Adding the Scheduler and Elevator Subsystems
+
+Purpose of Project: design and implement an elevator control system and simulator
+
+Authors: Defa Hu, Zewen Chen, Henrry Wilson, Mariam Almalki, Ruqaya Almalki
+
+#### Contents of this ReadMe
+- Iteration Description
+- Breakdown of Responsibilities
+- Explanation of Files and File Names
+- Set-up Instructions
+- Test Instructions 
+- UML Class Diagram
+- UML Sequence Diagram
+- State Machine Diagrams
+
+DESCRIPTION: 
+  
+          This project is simulating the elevator control system.
+          we will have a file acting the user role to request the elevator.
+          the Floor will get the request and send it to Scheduler, and Elevator
+          keep getting request from Scheduler, then Elevator knows what floor to go.
+
+
+### Breakdown of Responsibilities
+**Zewen Chen**: Elevator State machine <br>
+**Defa Hu** : Sequence Diagram and UML Class Diagram <br>
+**Henry Wilson** : State Diagrams <br>
+**Ruqaya Almalki**: Scheduler State machine <br>
+**Mariam Almalki** : All test cases<br>
+
+### Explanation of File Names
+- **Floor**: Every time the buffer is free and it gets data back from the elevator (via scheduler), the floor sends in a new request.
+- **FloorTest**: JUnit test for the above class.
+- **Elevator**: The elevator keeps trying to put data in the buffer and is successful only when it receives a request from the scheduler
+- **ElevatorTest**: JUnit test for the above class
+- **Buffer**: The Elevators and Floor are constantly polling the buffer to see if they can send their requests / data. It controls who has access to sending the request / data (only one at a time)
+- **Scheduler**: The Scheduler is responsible for constantly polling the buffer to see if there is data for it to send. If there is, it sends it to the appropriate class. 
+- **SchedulerTest**: JUnit test for the above class.
+- **Main**: This class is used to instantiate and start the threads and buffer. 
+
+### Set-up Instructions
+Simply run the Main() class in the ElevatorSimulator package. Each class will output a print statement on the console describing the action it is taking. 
+
+### Test Instructions 
+Test cases are standard JUnit 4 Tests. Right click on the AllTests() class in the Tests package then Run As -> Junit Test to test all the classes. Be mindful that SchedulerTest takes some time to complete.
+
+### UML Class Diagram
+This can also be found as a png file in the project zip file. <br>
+![UML](UML_ClassDiagram_I2.png)
+
+### UML Sequence Diagram
+This can also be found as a png file in the project zip file. <br>
+![SequenceDiagram](SequenceDiagram.png)
+
+### State Machine Diagrams
+These can also be found as a png file in the project zip file. <br>
+![UML](SchedulerStateDiagram.png) 
+<br>
+![UML](ElevatorStateDiagram.png)
+
+

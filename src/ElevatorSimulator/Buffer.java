@@ -1,3 +1,4 @@
+package src.ElevatorSimulator;
 /**
  * this class helps to facilitate the communication between the Floor class and
  * the Elevator class, handles sending requests
@@ -6,7 +7,19 @@
  * @author Mariam Almalki, Ruqaya Almalki
  *
  */
+
+/**
+ * events that causes the scheduler to change states
+ * 
+ * @author Ruqaya Almalki
+ *
+ */
+enum Events {
+	RECEIVING_ELEVATOR, RECEIVING_FLOOR, FLOOR_SENDING, ELEVATOR_SENDING, WAITING
+}
+
 public class Buffer {
+	private static Events event = Events.WAITING; // initially just waiting to receive/send something
 
 	/**
 	 * request contains the information the floor wants to send; data contains the
@@ -32,7 +45,23 @@ public class Buffer {
 	/**
 	 * determines if request is sent
 	 */
-	private boolean sendRequest;
+	private boolean sendRequest,processDone;
+	
+	private int currFloor,desFloor;
+
+	/**
+	 * @return the curFloor
+	 */
+	public int getCurrFloor() {
+		return currFloor;
+	}
+
+	/**
+	 * @param curFloor the curFloor to set
+	 */
+	public void setCurrFloor(int curFloor) {
+		this.currFloor = curFloor;
+	}
 
 	/**
 	 * Constructor initializes all class variables
@@ -42,6 +71,26 @@ public class Buffer {
 		requestIn = false;
 		elevDataIn = false;
 		sendRequest = false;
+		processDone = true;
+		event = Events.WAITING;
+	}
+
+	/**
+	 * gets the current event
+	 * 
+	 * @return the current event happening
+	 */
+	public Events getEvent() {
+		return Buffer.event;
+	}
+
+	/**
+	 * sets an event
+	 * 
+	 * @param e is the event that you want to set it to
+	 */
+	public void setEvent(Events e) {
+		event = e;
 	}
 
 	/**
@@ -50,15 +99,19 @@ public class Buffer {
 	 * @param request contains information about the desired event
 	 */
 	public synchronized void putFloorRequest(ControlDate request) {
-		while (elevDataIn || sendRequest) {
+		/*
+		while (elevDataIn || sendRequest) { // request is being processed
 			try {
+				event = Events.WAITING;
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
+	*/
 		this.request = request;
-
+		this.currFloor = request.getFloor();
+		this.desFloor = request.getDestinationFloor();
 		requestIn = true;
 		sendRequest = true;
 
@@ -71,14 +124,14 @@ public class Buffer {
 	 * @param data contains the information about the event
 	 */
 	public synchronized void putElevatorData(ControlDate data) {
-		while (requestIn || sendRequest) {
+		while (requestIn || sendRequest) { // request is being proccessed
 			try {
+				event = Events.WAITING;
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-
 		this.data = data;
 
 		elevDataIn = true;
@@ -96,6 +149,7 @@ public class Buffer {
 	public synchronized Object[] getData() {
 		while (!sendRequest) { // !requestIn && !elevDataIn ||
 			try {
+				event = Events.WAITING;
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -104,16 +158,18 @@ public class Buffer {
 
 		sendRequest = false;
 
-		if (requestIn) {
+		if (requestIn) { // floor is sending the request
 			toScheduler[0] = "Floor";
 			toScheduler[1] = request;
 			requestIn = false;
+			event = Events.RECEIVING_FLOOR;
 		}
 
-		if (elevDataIn) {
+		if (elevDataIn) { // elevator is sending the request
 			toScheduler[0] = "Elevator";
 			toScheduler[1] = data;
 			elevDataIn = false;
+			event = Events.RECEIVING_ELEVATOR;
 		}
 
 		notifyAll();
