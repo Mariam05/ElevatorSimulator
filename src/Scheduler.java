@@ -55,18 +55,18 @@ public class Scheduler {
 	 * @param elevator the elevator the floor wants to send information to
 	 * @param buffer   is used to receive information from a floor/elevator
 	 */
-	public Scheduler(String floorAddress) {
+	public Scheduler(InetAddress floorAddress) {
 
 		requestQueue = new LinkedList<>();
 		elevators = new HashMap<>();
 
 		try {
-			this.floorAddress = InetAddress.getByName(floorAddress);
+			this.floorAddress = floorAddress;
 			// the host port is 23, time out if waiting and no reply
 			receiveSocket = new DatagramSocket(23);
 			updateElevatorSocket = new DatagramSocket(1026);
 			ackSocket = new DatagramSocket();
-		} catch (SocketException | UnknownHostException e) {
+		} catch (SocketException e) {
 			e.printStackTrace();
 		}
 
@@ -322,7 +322,12 @@ public class Scheduler {
 	 */
 	public static void main(String[] args) {
 		// run the program
-		new Scheduler("cb5107-23");
+		try {
+			new Scheduler(InetAddress.getLocalHost());
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 

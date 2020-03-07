@@ -255,7 +255,7 @@ public class Elevator {
 		try {
 			// for multiple elevators change the id
 			// InetAddress.getLocalHost().getHostName();
-			InetAddress addr = InetAddress.getByName("cb5107-22");
+			//InetAddress addr = InetAddress.getByName("cb5107-22");
 			new Elevator(1, InetAddress.getLocalHost());
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block

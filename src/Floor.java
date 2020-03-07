@@ -44,10 +44,10 @@ public class Floor {
 	 * 
 	 * @param buffer object used to facilitate sending info to the elevator
 	 */
-	public Floor(String addr) {
+	public Floor(InetAddress addr) {
 
 		try {
-			schedulerAddress = InetAddress.getByName(addr);
+			schedulerAddress = addr;
 			this.receivedData = true; // initialized to true so that it runs the first time
 			this.file = new File("data.txt");
 			this.datas = new ArrayList<ControlDate>();
@@ -62,10 +62,7 @@ public class Floor {
 		} catch (SocketException se) {
 			se.printStackTrace();
 			System.exit(1);
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 		// initiate the sending/receiving of data
 		sendAndReceive();
 	}
@@ -180,6 +177,11 @@ public class Floor {
 	}
 
 	public static void main(String[] args) {
-		new Floor("cb5107-22");
+		try {
+			new Floor(InetAddress.getLocalHost());
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
