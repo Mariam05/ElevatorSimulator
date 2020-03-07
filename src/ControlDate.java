@@ -1,5 +1,8 @@
-package ElevatorSimulator;
+//package ElevatorSimulator;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Time;
+import org.json.*;
 
 public class ControlDate {
 
@@ -20,6 +23,30 @@ public class ControlDate {
 		this.floor=floor;
 		this.floorButton=floorButton;
 		this.destinationFloor=destinationFloor;
+	}
+	
+	/**
+	 * converts to a string using JSON format for easy extraction
+	 */
+	public String toString() {
+		JSONObject controlDate = new JSONObject();
+		try {
+			controlDate.put("time", time);
+			controlDate.put("floor", floor);
+			controlDate.put("floorButton", floorButton);
+			controlDate.put("destinationFloor", destinationFloor);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return controlDate.toString(); 
+	}
+	
+	/**
+	 * 
+	 * @return bytes of the JSON object
+	 */
+	public byte[] getByteArray() {
+		return this.toString().getBytes();
 	}
 
 	/**
@@ -69,4 +96,5 @@ public class ControlDate {
                 && this.floorButton == c.floorButton
                 && Integer.compare(this.destinationFloor, c.destinationFloor) == 0; 
 	}
+	
 }
