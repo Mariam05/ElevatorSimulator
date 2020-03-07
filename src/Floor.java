@@ -25,7 +25,6 @@ public class Floor {
 	/* from a3 client */
 	DatagramSocket sendSocket, receiveSocket;
 	private DatagramPacket sendPacket, receivePacket;
-	private static String fileName = "test.txt";
 	private static int hostPort = 23;
 	private int i = 0;
 
@@ -162,7 +161,7 @@ public class Floor {
 
 			try {
 				// sending packet to host
-				sendPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), hostPort);
+				sendPacket = new DatagramPacket(msg, msg.length, schedulerAddress, hostPort);
 				System.out.println("Floor: request count " + i++);
 				System.out.println("Contents (String): " + msgString);
 				System.out.println("Contents (Bytes): " + sendPacket.getData());
@@ -203,28 +202,6 @@ public class Floor {
 			}
 
 		}
-	}
-
-	/**
-	 * used to receive the data sent by the elevator
-	 * 
-	 * @param c controlDate object containing all required info
-	 */
-	public void receiveDataFromElevator(ControlDate c) {
-		System.out.format("Floor received elevator info from scheduler: moved from floor %d to %d\n\n", c.getFloor(),
-				c.getDestinationFloor());
-		this.receivedData = true;
-
-	}
-
-	/**
-	 * method used to get variable stored in ControlDate object for testing purposes
-	 * 
-	 * @param i index of of the arrayList
-	 * @return the object that we want to compare
-	 */
-	public ControlDate getData(int i) {
-		return this.datas.get(i);
 	}
 
 	public static void main(String[] args) {

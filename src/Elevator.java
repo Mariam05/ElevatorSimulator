@@ -266,10 +266,6 @@ public class Elevator {
 		}
 	}
 
-	public ControlDate getDate() {
-		return this.c;
-	}
-
 	/**
 	 * adding state to the elevator open button pressed
 	 * initial<--------------------------------------------->doorOpen close button
@@ -277,20 +273,4 @@ public class Elevator {
 	 * | | | | | | | moving-----------------------------------------------+ reach
 	 * desFloor
 	 */
-
-	// method to process action to each states
-	private void processState() {
-		switch (state) {
-		case IDLE:
-			System.out.println("elevator: door closed and avliable");
-			break;
-		case DOOR_OPEN:
-			System.out.println("elevator: door open");
-			break;
-		case MOVING:
-			System.out.format("elevator: moving from floor %d to %d\n", c.getFloor(), c.getDestinationFloor());
-			System.out.format("elevator: reach floor %d\n", c.getDestinationFloor());
-			break;
-		}
-	}
 }
