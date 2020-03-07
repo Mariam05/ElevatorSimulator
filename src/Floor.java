@@ -29,6 +29,7 @@ public class Floor {
 	private static int hostPort = 23;
 	private int i = 0;
 
+	private InetAddress schedulerAddress;
 	File file;
 	private Date date;
 	private Time time;
@@ -46,16 +47,17 @@ public class Floor {
 	 * 
 	 * @param buffer object used to facilitate sending info to the elevator
 	 */
-	public Floor(){
+	public Floor(String addr){
 		// this.buffer = buffer;
-		this.receivedData = true; // initialized to true so that it runs the first time
-		this.file = new File("data.txt");
-		this.datas = new ArrayList<ControlDate>();
-		this.requestQueue = new LinkedList<>();
-		sdf = new SimpleDateFormat("hh:mm:ss.S");
-		getDataFromFile();
 
 		try {
+			schedulerAddress = InetAddress.getByName(addr);
+			this.receivedData = true; // initialized to true so that it runs the first time
+			this.file = new File("data.txt");
+			this.datas = new ArrayList<ControlDate>();
+			this.requestQueue = new LinkedList<>();
+			sdf = new SimpleDateFormat("hh:mm:ss.S");
+			getDataFromFile();
 			sendSocket = new DatagramSocket();
 			// bind receiving socket to port 1000
 			receiveSocket = new DatagramSocket(1000);
@@ -64,6 +66,9 @@ public class Floor {
 		} catch (SocketException se) {
 			se.printStackTrace();
 			System.exit(1);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		// initiate the sending/receiving of data
 		sendAndReceive();
@@ -223,6 +228,6 @@ public class Floor {
 	}
 
 	public static void main(String[] args) {
-		new Floor();
+		new Floor("cb5107-22");
 	}
 }

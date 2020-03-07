@@ -34,7 +34,7 @@ public class Scheduler {
 	}
 
 	private HashMap<Integer, JSONObject> elevators;
-
+	private InetAddress floorAddress;
 	private DatagramSocket receiveSocket, ackSocket, updateElevatorSocket;
 	private static int clientPort = 1000, serverPort = 69;
 
@@ -72,18 +72,19 @@ public class Scheduler {
 	 * @param elevator the elevator the floor wants to send information to
 	 * @param buffer   is used to receive information from a floor/elevator
 	 */
-	public Scheduler() {
+	public Scheduler(String floorAddress) {
 
 		requestQueue = new LinkedList<>();
 		elevators = new HashMap<>();
 
 		try {
+			this.floorAddress = InetAddress.getByName(floorAddress);
 			// the host port is 23, time out if waiting and no reply
 			receiveSocket = new DatagramSocket(23);
 			// receiveSocket.setSoTimeout(5000);
 			updateElevatorSocket = new DatagramSocket(1026);
 			ackSocket = new DatagramSocket();
-		} catch (SocketException e) {
+		} catch (SocketException | UnknownHostException e) {
 			e.printStackTrace();
 		}
 
@@ -106,9 +107,9 @@ public class Scheduler {
 					String txt;
 					try {
 						// block till packet is received
-						
+
 						receiveSocket.receive(receivePacket);
-						//sendACK(1000, "floor", InetAddress.getLocalHost());
+						// sendACK(1000, "floor", InetAddress.getLocalHost());
 						txt = new String(data, 0, receivePacket.getLength());
 						JSONObject obj2 = new JSONObject(txt);
 						synchronized (requestQueue) {
@@ -119,13 +120,13 @@ public class Scheduler {
 						System.out.println("Contents (String): " + txt);
 						System.out.println("Contents (Bytes): " + receivePacket.getData() + "\n");
 
-						sendACK(1000, "floor", InetAddress.getLocalHost());
+						sendACK(1000, "floor", floorAddress);
 					} catch (IOException e) {
 						System.out.println("socket timeout :/");
 						// cleanup
 						receiveSocket.close();
-						//forwardSocket.close();
-						//ackSocket.close();
+						// forwardSocket.close();
+						// ackSocket.close();
 						System.exit(1);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
@@ -169,7 +170,6 @@ public class Scheduler {
 						synchronized (elevators) {
 							elevators.put(newElev.getInt("id"), newElev);
 						}
-						
 
 						getSubSocket.close();
 
@@ -203,10 +203,16 @@ public class Scheduler {
 					try {
 						// block till packet is received
 						updateElevatorSocket.receive(receivePacket);
+						
 						txt = new String(data, 0, receivePacket.getLength());
 						JSONObject obj2 = new JSONObject(txt);
 						System.out.println("receieved from elevator: " + obj2.toString());
 						int elevId = obj2.getInt("id");
+						
+//						//send ack
+//						String inetAdd = (String) elevators.get(elevId).get("InetAddress");
+//						sendACK(1040, "elevator", InetAddress.getByName(inetAdd));
+						
 						synchronized (elevators) {
 							elevators.put(elevId, obj2);
 							notifyAll();
@@ -255,7 +261,7 @@ public class Scheduler {
 
 						synchronized (requestQueue) {
 							synchronized (elevators) {
-								if (!requestQueue.isEmpty()) {
+								if (!requestQueue.isEmpty() && !elevators.isEmpty()) {
 
 									JSONObject firstReq = requestQueue.remove();
 
@@ -275,7 +281,9 @@ public class Scheduler {
 									cmdPacket = new DatagramPacket(cmd, cmd.length, InetAddress.getByName(inetAdd),
 											serverPort);
 									sendCmdSocket.send(cmdPacket);
-									//sendACK(1024)
+									sendACK(1040, "elevator", InetAddress.getByName(inetAdd));
+									
+									//receive an ack here
 								}
 							}
 						}
@@ -307,25 +315,19 @@ public class Scheduler {
 	 * @param sendToSource who the ack should be sent to, the client or server
 	 */
 	private void sendACK(int port, String sendToSource, InetAddress sourceAddress) {
-
-		System.out.println("in the ackkkkkkkkkkkkkkkkk");
-		JSONObject ack = new JSONObject();
 		try {
+			JSONObject ack = new JSONObject();
 			ack.put("message", "ACK");
-		} catch (JSONException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		byte[] data = ack.toString().getBytes();
-
-		DatagramPacket ackPacket = new DatagramPacket(data, data.length, sourceAddress, port);
-
-		try {
-			System.out.println("Host: Sending ACK to " + sendToSource + "...");
+			byte[] data = ack.toString().getBytes();
+			DatagramPacket ackPacket = new DatagramPacket(data, data.length, sourceAddress, port);
+			System.out.println("Scheduler: Sending ACK to " + sendToSource + "...");
 			System.out.println("Contents(String) " + ack.toString());
 			ackSocket.send(ackPacket);
-			System.out.println("Host: ACK sent\n");
+			System.out.println("Scheduler: ACK sent\n");
+		} catch (JSONException e1) {
+			e1.printStackTrace();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -338,7 +340,7 @@ public class Scheduler {
 	 */
 	public static void main(String[] args) {
 		// run the program
-		new Scheduler();
+		new Scheduler("cb5107-23");
 
 	}
 

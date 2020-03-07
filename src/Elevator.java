@@ -11,7 +11,7 @@ import org.json.JSONObject;
 
 enum ElevatorState {
 	// enums for identifying elevator states
-	IDLE, DOOR_OPEN, MOVING
+	IDLE, DOOR_OPEN, DOOR_CLOSED, MOVING
 }
 
 public class Elevator {
@@ -20,15 +20,14 @@ public class Elevator {
 	private DatagramSocket sendSocket, receiveSocket, subscribeSocket, ackSocket;
 
 	private int id; // to use in the future when there are multiple elevators
-	private Scheduler scheduler;
 	private int currFloor;
 	private ControlDate c;
-	private boolean dataIn;
 	public ElevatorState state;
 	private int updateStatusPort = 1026;
 
 	private InetAddress schedulerAddress;
 
+	private int ackPort = 1040;
 	private int subscriptionPort = 1035;
 	private JSONObject subObj;
 
@@ -38,7 +37,6 @@ public class Elevator {
 
 		this.id = id;
 		this.currFloor = 1;
-		this.dataIn = false;
 		state = ElevatorState.IDLE;
 
 		subObj = new JSONObject();
@@ -51,7 +49,7 @@ public class Elevator {
 			receiveSocket = new DatagramSocket(69);
 			subscribeSocket = new DatagramSocket();
 			sendSocket = new DatagramSocket();
-			ackSocket = new DatagramSocket();
+			ackSocket = new DatagramSocket(ackPort);
 
 			subscribePacket = new DatagramPacket(subArr, subArr.length, schedulerAddress, subscriptionPort);
 			subscribeSocket.send(subscribePacket);
@@ -112,13 +110,18 @@ public class Elevator {
 					updateJSONObj();
 					sendStateUpdate();
 					//receiveACK();
+					state = ElevatorState.MOVING;
 				}
 				currFloor--;
+				state = ElevatorState.DOOR_OPEN;
 				System.out.println("got to passenger...now moving to destination:");
+				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 
 			} else if (dir == 0) {
 				System.out.println("elevator at passenger floor: open doors");
+				state = ElevatorState.DOOR_OPEN;
+				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 			} else {
 				for (int i = currFloor; i >= passengerFloor; i--) {
@@ -126,9 +129,13 @@ public class Elevator {
 					Thread.sleep(2000);
 					updateJSONObj();
 					sendStateUpdate();
+					//receiveACK();
+					state = ElevatorState.MOVING;
 				}
 				currFloor++;
+				state = ElevatorState.DOOR_OPEN;
 				System.out.println("got to passenger...now moving to destination:");
+				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 			}
 
@@ -152,7 +159,12 @@ public class Elevator {
 					Thread.sleep(2000);
 					updateJSONObj();
 					sendStateUpdate();
+					//receiveACK();
+					state = ElevatorState.MOVING;
 				}
+				state = ElevatorState.DOOR_OPEN;
+				state = ElevatorState.DOOR_CLOSED;
+				state = ElevatorState.IDLE;
 
 			} else {
 				for (int i = currFloor; i > destinationFloor; i--) {
@@ -160,7 +172,12 @@ public class Elevator {
 					Thread.sleep(2000);
 					updateJSONObj();
 					sendStateUpdate();
+					//receiveACK();
+					state = ElevatorState.MOVING;
 				}
+				state = ElevatorState.DOOR_OPEN;
+				state = ElevatorState.DOOR_CLOSED;
+				state = ElevatorState.IDLE;
 
 			}
 		} catch (JSONException | InterruptedException e) {
@@ -191,20 +208,19 @@ public class Elevator {
 				System.out.println("Server: Request received: ");
 				System.out.println("Contents (String): " + obj.toString());
 				System.out.println("Contents (Bytes): " + receivePacket.getData() + "\n");
+				
+				//send an ack
+				JSONObject ack = new JSONObject();
+				ack.put("message", "ACK");
+				byte[] data1 = ack.toString().getBytes();
+				DatagramPacket ackPacket = new DatagramPacket(data1, data1.length, schedulerAddress, ackPort);
+				System.out.println("Elevator: sending ack to scheduler...");
+				System.out.println("Contents(String) " + ack.toString());
+				ackSocket.send(ackPacket);
+				System.out.println("Elevator: ACK sent\n");
 
 				// execute command
 				moveElevator(obj);
-
-				// receiving the ack
-//				
-//				 byte replyData[] = new byte[100]; receivePacket = new
-//				  DatagramPacket(replyData, replyData.length);
-//				  System.out.println("Server: Waiting for ACK...\n");
-//				  receiveSocket.receive(receivePacket); txt = new String(replyData, 0,
-//				  receivePacket.getLength()); JSONObject ack = new JSONObject(txt);
-//				  System.out.println("Server: ACK received");
-//				  System.out.println("Contents (String): " + ack.toString());
-//				  System.out.println("Contents (Bytes): " + receivePacket.getData() + "\n");
 
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -216,35 +232,20 @@ public class Elevator {
 		}
 	}
 
-	/**
-	 * sends an ack message to the one who sent the data to be forwarded (accepting
-	 * the data/the reply)
-	 * 
-	 * @param port         to be sent to
-	 * @param sendToSource who the ack should be sent to, the client or server
-	 */
 	private void receiveACK() {
 
-		
 		byte replyData[] = new byte[100];
 		ackPacket = new DatagramPacket(replyData, replyData.length);
-		System.out.println("Server: Waiting for ACK...\n");
 		try {
 			ackSocket.receive(ackPacket);
 			String txt = new String(replyData, 0, ackPacket.getLength());
 			JSONObject ack = new JSONObject(txt);
 			System.out.println("elevator: ACK received from scheduler");
-//			System.out.println("Contents (String): " + ack.toString());
-//			System.out.println("Contents (Bytes): " + receivePacket.getData() + "\n");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-
 	}
 
 	/**
@@ -255,29 +256,14 @@ public class Elevator {
 	public static void main(String[] args) {
 		// run the program
 		try {
+			//for multiple elevators change the id
+			//InetAddress.getLocalHost().getHostName(); 
+			InetAddress addr = InetAddress.getByName("cb5107-22");
 			new Elevator(1, InetAddress.getLocalHost());
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	public synchronized void receiveFloorInfo(ControlDate c) {
-		this.c = c;
-		this.dataIn = true;
-		state = ElevatorState.MOVING;
-		processState();
-
-	}
-
-	public synchronized void pressDoorOpenButton() {
-		state = ElevatorState.DOOR_OPEN;
-		processState();
-	}
-
-	public synchronized void pressDoorCloseButton() {
-		state = ElevatorState.IDLE;
-		processState();
 	}
 
 	public ControlDate getDate() {
