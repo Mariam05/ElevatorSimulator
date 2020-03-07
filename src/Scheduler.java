@@ -1,5 +1,3 @@
-//package ElevatorSimulator;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -36,14 +34,9 @@ public class Scheduler {
 	private HashMap<Integer, JSONObject> elevators;
 	private InetAddress floorAddress;
 	private DatagramSocket receiveSocket, ackSocket, updateElevatorSocket;
-	private static int clientPort = 1000, serverPort = 69;
+	private static int floorPort = 1000, serverPort = 69;
 
-	private static int receiveElevStateUpdatePort = 1026;
-	private InetAddress clientAddress, serverAddress;
-	private boolean clientReady, serverReady, sendACKClient, sendACKServer, forwardToServer, forwardToClient;
-	private int requestCountClient = 0, requestCountServer = 0;
 	private Queue<JSONObject> requestQueue;
-	// private static Request ACK = new Request("ACK", Request.RequestType.ACK, "");
 
 	/**
 	 * stores the state of the scheduler, it starts off idle
@@ -54,16 +47,6 @@ public class Scheduler {
 	 * object used to encapsulate the data being sent by the elevator/floor
 	 */
 	ControlDate c;
-
-	/**
-	 * the floor object that is receiving/sending information
-	 */
-	private Floor floor;
-
-	/**
-	 * the elevator object that is receiving/sending information
-	 */
-	private Elevator elev;
 
 	/**
 	 * Constructor initializing all the class variables
@@ -81,7 +64,6 @@ public class Scheduler {
 			this.floorAddress = InetAddress.getByName(floorAddress);
 			// the host port is 23, time out if waiting and no reply
 			receiveSocket = new DatagramSocket(23);
-			// receiveSocket.setSoTimeout(5000);
 			updateElevatorSocket = new DatagramSocket(1026);
 			ackSocket = new DatagramSocket();
 		} catch (SocketException | UnknownHostException e) {
@@ -109,7 +91,7 @@ public class Scheduler {
 						// block till packet is received
 
 						receiveSocket.receive(receivePacket);
-						// sendACK(1000, "floor", InetAddress.getLocalHost());
+					   // sendACK(1000, "floor", InetAddress.getLocalHost());
 						txt = new String(data, 0, receivePacket.getLength());
 						JSONObject obj2 = new JSONObject(txt);
 						synchronized (requestQueue) {
@@ -120,7 +102,7 @@ public class Scheduler {
 						System.out.println("Contents (String): " + txt);
 						System.out.println("Contents (Bytes): " + receivePacket.getData() + "\n");
 
-						sendACK(1000, "floor", floorAddress);
+						sendACK(floorPort, "floor", floorAddress);
 					} catch (IOException e) {
 						System.out.println("socket timeout :/");
 						// cleanup

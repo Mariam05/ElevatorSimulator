@@ -1,4 +1,4 @@
-//package ElevatorSimulator;
+
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Queue;
-import org.json.*;
 
 public class Floor {
 	/**
@@ -38,7 +37,6 @@ public class Floor {
 	private ArrayList<ControlDate> datas;
 	private static Queue<ControlDate> requestQueue;
 	private SimpleDateFormat sdf;
-	private Buffer buffer;
 	private boolean receivedData;
 
 	/**
@@ -46,8 +44,7 @@ public class Floor {
 	 * 
 	 * @param buffer object used to facilitate sending info to the elevator
 	 */
-	public Floor(String addr){
-		// this.buffer = buffer;
+	public Floor(String addr) {
 
 		try {
 			schedulerAddress = InetAddress.getByName(addr);
@@ -61,7 +58,7 @@ public class Floor {
 			// bind receiving socket to port 1000
 			receiveSocket = new DatagramSocket(1000);
 			// timeout if not receiving anything
-		//	receiveSocket.setSoTimeout(5000);
+			// receiveSocket.setSoTimeout(5000);
 		} catch (SocketException se) {
 			se.printStackTrace();
 			System.exit(1);
@@ -71,26 +68,6 @@ public class Floor {
 		}
 		// initiate the sending/receiving of data
 		sendAndReceive();
-	}
-
-	public String toString() {
-		JSONObject str = new JSONObject();
-		try {
-			str.put("buffer", buffer);
-			str.put("receivedData", receivedData);
-			str.put("file", file);
-			str.put("datas", datas);
-			str.put("requestQueue", requestQueue);
-			str.put("sdf", sdf);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return str.toString();
-	}
-
-	public byte[] getByteArray() {
-		return this.toString().getBytes();
 	}
 
 	/**
@@ -166,10 +143,10 @@ public class Floor {
 				System.out.println("Contents (String): " + msgString);
 				System.out.println("Contents (Bytes): " + sendPacket.getData());
 				sendSocket.send(sendPacket);
-				
+
 				System.out.println("Floor: Packet sent.\n");
-				
-				//TODO: Make the var random or make a sped up clock 
+
+				// TODO: Make the var random or make a sped up clock
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
@@ -188,8 +165,6 @@ public class Floor {
 				System.out.println("Floor: Reply received from host");
 				System.out.println("Contents [String]: " + data.toString());
 				System.out.println("Contents [Bytes]: " + receivePacket.getData() + "\n");
-
-
 
 			} catch (UnknownHostException e) {
 				e.printStackTrace();

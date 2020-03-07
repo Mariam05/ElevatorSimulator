@@ -1,5 +1,3 @@
-//package ElevatorSimulator;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -21,7 +19,6 @@ public class Elevator {
 
 	private int id; // to use in the future when there are multiple elevators
 	private int currFloor;
-	private ControlDate c;
 	public ElevatorState state;
 	private int updateStatusPort = 1026;
 
@@ -109,7 +106,7 @@ public class Elevator {
 					Thread.sleep(2000);
 					updateJSONObj();
 					sendStateUpdate();
-					//receiveACK();
+					// receiveACK();
 					state = ElevatorState.MOVING;
 				}
 				currFloor--;
@@ -129,7 +126,7 @@ public class Elevator {
 					Thread.sleep(2000);
 					updateJSONObj();
 					sendStateUpdate();
-					//receiveACK();
+					// receiveACK();
 					state = ElevatorState.MOVING;
 				}
 				currFloor++;
@@ -159,7 +156,7 @@ public class Elevator {
 					Thread.sleep(2000);
 					updateJSONObj();
 					sendStateUpdate();
-					//receiveACK();
+					// receiveACK();
 					state = ElevatorState.MOVING;
 				}
 				state = ElevatorState.DOOR_OPEN;
@@ -172,7 +169,7 @@ public class Elevator {
 					Thread.sleep(2000);
 					updateJSONObj();
 					sendStateUpdate();
-					//receiveACK();
+					// receiveACK();
 					state = ElevatorState.MOVING;
 				}
 				state = ElevatorState.DOOR_OPEN;
@@ -208,8 +205,8 @@ public class Elevator {
 				System.out.println("Server: Request received: ");
 				System.out.println("Contents (String): " + obj.toString());
 				System.out.println("Contents (Bytes): " + receivePacket.getData() + "\n");
-				
-				//send an ack
+
+				// send an ack
 				JSONObject ack = new JSONObject();
 				ack.put("message", "ACK");
 				byte[] data1 = ack.toString().getBytes();
@@ -256,8 +253,8 @@ public class Elevator {
 	public static void main(String[] args) {
 		// run the program
 		try {
-			//for multiple elevators change the id
-			//InetAddress.getLocalHost().getHostName(); 
+			// for multiple elevators change the id
+			// InetAddress.getLocalHost().getHostName();
 			InetAddress addr = InetAddress.getByName("cb5107-22");
 			new Elevator(1, InetAddress.getLocalHost());
 		} catch (UnknownHostException e) {
