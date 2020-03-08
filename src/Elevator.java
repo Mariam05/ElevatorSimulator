@@ -27,7 +27,8 @@ public class Elevator {
 	private int ackPort = 1040;
 	private int subscriptionPort = 1035;
 	private JSONObject subObj;
-
+	
+	
 	public Elevator(int id, InetAddress schedulerAddress) {
 
 		this.schedulerAddress = schedulerAddress;
@@ -54,7 +55,7 @@ public class Elevator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		receiveAndRespond();
+		//receiveAndRespond();
 	}
 
 	/**
@@ -141,10 +142,9 @@ public class Elevator {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
 	}
 
-	private void goToDestination(JSONObject obj) {
+	public void goToDestination(JSONObject obj) {
 		int destinationFloor;
 		try {
 			destinationFloor = obj.getInt("destinationFloor");
@@ -244,6 +244,10 @@ public class Elevator {
 			e.printStackTrace();
 		}
 	}
+	
+	public int getCurrentFloor() {
+		return this.currFloor;
+	}
 
 	/**
 	 * runs the Server forever, or until and exception occurs
@@ -256,7 +260,8 @@ public class Elevator {
 			// for multiple elevators change the id
 			// InetAddress.getLocalHost().getHostName();
 			//InetAddress addr = InetAddress.getByName("cb5107-22");
-			new Elevator(1, InetAddress.getLocalHost());
+			Elevator ele = new Elevator(1, InetAddress.getLocalHost());
+			ele.receiveAndRespond();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

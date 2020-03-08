@@ -64,7 +64,7 @@ public class Floor {
 			System.exit(1);
 		} 
 		// initiate the sending/receiving of data
-		sendAndReceive();
+		//sendAndReceive();
 	}
 
 	/**
@@ -175,10 +175,15 @@ public class Floor {
 
 		}
 	}
+	
+	public ControlDate getdata(int i) {
+		return this.datas.get(i);
+	}
 
 	public static void main(String[] args) {
 		try {
-			new Floor(InetAddress.getLocalHost());
+			Floor floor = new Floor(InetAddress.getLocalHost());
+			floor.sendAndReceive();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
