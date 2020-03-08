@@ -1,108 +1,91 @@
 package Tests;
 
-import static org.junit.Assert.assertTrue;
+import ElevatorSimulator.*;
 
+import static org.junit.Assert.*;
+
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 
-import ElevatorSimulator.*;
-
-/**
- * This is the test class for the Scheduler
- * 
- * Current version tests the elevator state when waiting for data to be received. 
- * The tests have letters in front of them so that they will run in order. 
- * 
- * @version 15 Feb 2020
- * 
- * @author Henry Wilson
- * @author Mariam Almalki
- *
- */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SchedulerTest {
+	
+	private static InetAddress floorAddress;
 
-	private ControlDate controlDate;
-	private SimpleDateFormat sdf;
-	private Scheduler s;
-	private Buffer b;
-	private Floor f;
-	private Elevator e;
+	private static JSONObject subObj;
 
-	@Before
-	public void setUp() throws Exception {
-
-		// initiate modules and start threads
-		b = new Buffer();
-		f = new Floor(b);
-		e = new Elevator(b);
-		s = new Scheduler(f, e, b);
-
-		sdf = new SimpleDateFormat("hh:mm:ss.S");
+	/**
+	 * This test does many things. 
+	 * The reason they are not split into multiple tests is because that would result in a binding exception.
+	 * The tests that this case covers are:
+	 * - successful subscription of elevator to schedule
+	 * - successful update of elevator state in schedule 
+	 * - successful receiving of data
+	 */
+	@Test
+	public void test() {
 		try {
-			controlDate = new ControlDate(new Time(sdf.parse("09:09:09.1").getTime()), 1, true, 5);
-		} catch (ParseException e) {
+			floorAddress = InetAddress.getLocalHost();
+			
+			/* Test subscription of an elevator */
+			Scheduler s = new Scheduler(floorAddress);
+			//Thread.sleep(1000);
+			Elevator e = new Elevator(1, InetAddress.getLocalHost());
+			Thread.sleep(1000); // give it time to register 
+			System.out.println(s.getNumElevators());
+			assertEquals(s.getNumElevators(), 1 );
+			
+			subObj = new JSONObject();
+			subObj.put("id", 1);
+			subObj.put("InetAddress", InetAddress.getLocalHost().getHostName());
+			subObj.put("currFloor", 1);
+			subObj.put("State", Elevator.ElevatorState.IDLE );
+			subObj.put("destinationFloor", 2);
+			
+			/* Test to ensure that elevator states change */
+			JSONObject elevInitState = s.getElevatorInfo(1);
+			System.out.println("INitial: " + elevInitState);
+			e.goToDestination(subObj);
+			Thread.sleep(1000);
+			JSONObject elevCurrState = s.getElevatorInfo(1);
+			System.out.println("Current: " + elevCurrState);
+			
+			assertFalse((s.getElevatorInfo(1).toString()).equals(elevInitState.toString()));
+			
+			/* Test that scheduler receives data from floor */
+			
+			SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.S");
+			Date date = sdf.parse("09:09:09.1");
+			Time time = new Time(date.getTime());
+			
+			ControlDate c = new ControlDate(time, 5, false, 2);	
+			
+			byte msg[] =c.getByteArray();
+			String msgString =  c.toString();
+			// sending packet to host
+			DatagramPacket sendPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), 23);
+			DatagramSocket sendSocket = new DatagramSocket();
+			sendSocket.send(sendPacket);
+			Thread.sleep(500); // give it time to update
+			System.out.println("REQUESTS  " + s.currReq);
+			assertTrue(s.currReq != null);
+			sendSocket.close();
+			
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-
-	/**
-	 * Check that the scheduler is waiting for a response after sending
-	 * a request to the elevator
-	 */
-	@Test
-	public void aTestSendRequestToElevator() {
-		s = new Scheduler(f, e, b);
-		s.sendRequestToElevator(controlDate);
-		assertTrue(s.getState() == Scheduler.States.IDLE);
-	}
 	
-	/**
-	 * Check that the scheduler is waiting for a request after sending 
-	 * a response to the floor. 
-	 */
-	@Test
-	public void bTestSendDataToFloor() {
-		s.sendDataToFloor(controlDate);
-		assertTrue(s.getState() == Scheduler.States.IDLE);
-	}
 	
-	/**
-	 * Test the data transfer between classes 
-	 * @throws ParseException
-	 * @throws InterruptedException
-	 */
-	@Test
-	public void testDataTransfer() throws ParseException, InterruptedException {
-		Thread fThread = new Thread(f, "Floor");
-		Thread eThread = new Thread(e, "Elevator");
-		Thread sThread = new Thread(s, "Scheduler");
-		fThread.start();
-		eThread.start();
-		sThread.start();
 
-		// give elevator enough time to get a date to begin with
-		while (e.getDate() == null) {
-			;
-		}
-
-		// since there is a significant delay between floor obtaining a date and
-		// elevator obtaining the date, temp will hold elevator's last date
-		// and hold off the assertion until elevator's date has updated
-		ControlDate temp;
-		for (int i = 0; i < 10; i++) {
-			temp = e.getDate();
-			assert (f.getData(i).equals(e.getDate()));
-			while (temp == e.getDate() && i != 9) { // i == 9 is the exit condition
-				Thread.sleep(250);
-			}
-		}
-		
-	}
 }

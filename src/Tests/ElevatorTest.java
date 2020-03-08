@@ -1,58 +1,51 @@
 package Tests;
-import static org.junit.Assert.*;
 
+import ElevatorSimulator.*;
+import static org.junit.Assert.assertTrue;
+
+import java.net.InetAddress;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import org.json.JSONObject;
+import org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 
-import ElevatorSimulator.*;
-
-/**
+/*
+* Elevator Test cases
  * 
- * @author Mariam Almalki
- *
+ * @version 07 Mar 2020
+ * @author Defa Hu
  */
+
 public class ElevatorTest {
-	
-	private ControlDate date;
-	private SimpleDateFormat sdf;
-	private Elevator elevator;
 
+	 private static ControlDate date;
+	 private static Elevator elevator;
+	 private static JSONObject subObj;
+	 
 	@Before
-	public void setUp() throws Exception {
+	public void setUpBeforeClass() throws Exception {
 		System.out.println("GOing through");
-		sdf = new SimpleDateFormat("hh:mm:ss.S");
-		Buffer b = new Buffer();
-		elevator = new Elevator(b);
-		try {
-			date = new ControlDate(new Time(sdf.parse("09:09:09.1").getTime()), 1, true, 5);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Test
-	public void testMovingState() {
-		System.out.println("Floor: " + date.getFloor());
-		elevator.receiveFloorInfo(date);
-		assertTrue(elevator.state == Elevator.ElevatorState.moving);
-	}
-
-	@Test
-	public void testDoorOpen() {
-		elevator.pressDoorOpenButton();
-		assertTrue(elevator.state == Elevator.ElevatorState.doorOpen);
+		elevator = new Elevator(1,InetAddress.getLocalHost());
+		subObj = new JSONObject();
+		subObj.put("id", 1);
+		subObj.put("InetAddress", InetAddress.getLocalHost().getHostName());
+		subObj.put("currFloor", 1);
+		subObj.put("State", Elevator.ElevatorState.IDLE );
+		subObj.put("destinationFloor", 5);
 		
 	}
+
 	
-	@Test 
-	public void testDoorClosed() {
-		elevator.pressDoorCloseButton();
-		assertTrue(elevator.state == Elevator.ElevatorState.initial);
+	@Test
+	public void testgoToDestination() {
+		elevator.goToDestination(subObj);
+		assertTrue(5 == elevator.getCurrentFloor());
 	}
 
-}
 
+}

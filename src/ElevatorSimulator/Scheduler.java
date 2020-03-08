@@ -1,14 +1,28 @@
 package ElevatorSimulator;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
- * this class facilitates the communication between the Floor class and the
- * Elevator class
+ * this class contains the logic engine of the process. it receives the
+ * requests, processes it, and sends a command to an elevator to fulfill the
+ * request
  * 
- * @version 15 Feb 2020
+ * @version 07 March 2020
  * @author Mariam Almalki, Ruqaya Almalki
  *
  */
-public class Scheduler implements Runnable {
+public class Scheduler {
 
 	/**
 	 * states of the scheduler
@@ -17,18 +31,37 @@ public class Scheduler implements Runnable {
 	 *
 	 */
 	public enum States {
-		SENDING, RECEIVING, IDLE
+		UPDATING
 	}
+	
+	public JSONObject currReq;
+
+	/**
+	 * contains a list of all the subscribed elevators and their contents
+	 */
+	private HashMap<Integer, JSONObject> elevators;
+	/**
+	 * IP address of the floor
+	 */
+	private InetAddress floorAddress;
+	/**
+	 * sockets used to send and receive different types of information
+	 */
+	private DatagramSocket floorSocket, ackSocket, updateElevatorSocket;
+	/**
+	 * ports used to communicate with the different entities in the system
+	 */
+	private static int floorPort = 1000, serverPort = 69, elevatorACKport = 1040;
+
+	/**
+	 * queue full of all the requests coming in from the floor
+	 */
+	private Queue<JSONObject> requestQueue;
 
 	/**
 	 * stores the state of the scheduler, it starts off idle
 	 */
-	private static States state = States.IDLE; // starts off as idle;
-
-	/**
-	 * stores the data being received from the buffer
-	 */
-	private Object[] data;
+	private static States state = States.UPDATING; // starts off as idle;
 
 	/**
 	 * object used to encapsulate the data being sent by the elevator/floor
@@ -36,141 +69,302 @@ public class Scheduler implements Runnable {
 	ControlDate c;
 
 	/**
-	 * the floor object that is receiving/sending information
-	 */
-	private Floor floor;
-
-	/**
-	 * the elevator object that is receiving/sending information
-	 */
-	private Elevator elev;
-
-	/**
-	 * buffer object used to help the scheduler receive information
-	 */
-	private Buffer buffer;
-
-	/**
 	 * Constructor initializing all the class variables
 	 * 
-	 * @param floor    the floor the elevator wants to send information to
-	 * @param elevator the elevator the floor wants to send information to
-	 * @param buffer   is used to receive information from a floor/elevator
+	 * @param floorAddress is the ip address of the floor
 	 */
-	public Scheduler(Floor floor, Elevator elevator, Buffer buffer) {
-		this.floor = floor;
-		this.elev = elevator;
-		this.buffer = buffer;
-	}
+	public Scheduler(InetAddress floorAddress) {
 
-	public States getState() {
-		return state;
-	}
+		requestQueue = new LinkedList<>();
+		elevators = new HashMap<>();
 
-	/**
-	 * method used to send information from the floor to the elevator
-	 * 
-	 * @param c contains all the information the elevator needs from the floor
-	 */
-	public void sendRequestToElevator(ControlDate c) {
-		System.out.println("Scheduler is sending info from floor to elevator\n");
-		elev.receiveFloorInfo(c);
-		buffer.setEvent(Events.WAITING);
 		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
+			requestQueue = new LinkedList<>();
+			elevators = new HashMap<>();
+			this.floorAddress = floorAddress;
+			// the host port is 23, time out if waiting and no reply
+			floorSocket = new DatagramSocket(23);
+			updateElevatorSocket = new DatagramSocket(1026);
+			ackSocket = new DatagramSocket();
+		} catch (SocketException e) {
 			e.printStackTrace();
 		}
+
+		addSubscribers();
+		receiveFromFloor();
+		scheduleAndSendCmd();
+		updateElevatorStatus();
+	}
+	
+	
+	public int getNumRequests() {
+		return requestQueue.size();
 	}
 
 	/**
-	 * method used to send information from the elevator to the floor
-	 * 
-	 * @param c contains all the information the floor needs from the elevator
+	 * receives the info from the floor and stores it in a queue, sends the floor an
+	 * ACK. its a thread so it can constantly be doing this while other stuff go on.
 	 */
-	public void sendDataToFloor(ControlDate c) {
-		System.out.println("Scheduler is sending info from elevator to floor\n");
-		floor.receiveDataFromElevator(c);
-		buffer.setEvent(Events.WAITING);
+	private void receiveFromFloor() {
+		Runnable receive = new Runnable() {
+
+			@Override
+			public void run() {
+
+				while (true) {
+					try {
+						// receiving the data
+						byte[] data = new byte[100]; // array to hold received data in
+						DatagramPacket receivePacket = new DatagramPacket(data, data.length); // receive packet
+						String txt;
+						// block till packet is received
+						floorSocket.receive(receivePacket);
+
+						// process the received packet
+						txt = new String(data, 0, receivePacket.getLength());
+						JSONObject obj2 = new JSONObject(txt);
+						currReq = obj2;
+						synchronized (requestQueue) {
+							requestQueue.add(obj2);
+						}
+						System.out.println("Queue " + requestQueue.size());
+						System.out.println("Scheduler: Packet received from floor");
+						System.out.println("Contents (String): " + txt);
+						System.out.println("Contents (Bytes): " + receivePacket.getData() + "\n");
+
+						// send an ACK
+						sendACK(floorPort, "floor", floorAddress);
+
+					} catch (IOException e) {
+						System.out.println("socket timeout :/");
+						// cleanup
+						floorSocket.close();
+						System.exit(1);
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+
+				}
+
+			}
+
+		};
+		// create thread and start it
+		Thread rThread = new Thread(receive);
+		rThread.start();
+	}
+
+	/**
+	 * the elevators needs to subscribe to the Scheduler in order to be recognized
+	 * by the system
+	 */
+	private void addSubscribers() {
+
+		Runnable getSub = new Runnable() {
+			byte[] arr = new byte[100];
+			DatagramPacket newElevPacket;
+			DatagramSocket getSubSocket;
+
+			@Override
+			public void run() {
+				while (true) {
+					newElevPacket = new DatagramPacket(arr, arr.length);
+
+					try {
+						getSubSocket = new DatagramSocket(1035);
+						// receive subscription packet from elevator
+						getSubSocket.receive(newElevPacket);
+						String elev = new String(arr, 0, newElevPacket.getLength());
+						System.out.println("This elevator is subscribing to the scheduler: " + elev);
+						// extract info in JSON format
+						JSONObject newElev = new JSONObject(elev);
+						synchronized (elevators) {
+							// add it to the Hashmap containing all elevator info
+							elevators.put(newElev.getInt("id"), newElev);
+						}
+						getSubSocket.close();
+
+					} catch (IOException e) {
+						e.printStackTrace();
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+
+				}
+			}
+		};
+		// start the threads
+		Thread sThread = new Thread(getSub);
+		sThread.start();
+
+	}
+	/**
+	 * constantly updates the elevator states/positions
+	 */
+	private synchronized void updateElevatorStatus() {
+		Runnable updateStatus = new Runnable() {
+
+			@Override
+			public void run() {
+				while (true) {
+					try {
+						// receiving the data
+						byte[] data = new byte[100]; // array to hold received data in
+						DatagramPacket receivePacket = new DatagramPacket(data, data.length); // receive packet
+						String txt;
+						// block till packet is received
+						updateElevatorSocket.receive(receivePacket);
+
+						txt = new String(data, 0, receivePacket.getLength());
+						JSONObject obj2 = new JSONObject(txt);
+						System.out.println("receieved from elevator: " + obj2.toString());
+						int elevId = obj2.getInt("id");
+
+						synchronized (elevators) {
+							elevators.put(elevId, obj2);
+						}
+
+						// process the packet received
+						System.out.println("Scheduler: Status Update received");
+						System.out.println("Contents (String): " + txt);
+						System.out.println("Contents (Bytes): " + receivePacket.getData() + "\n");
+
+					} catch (IOException e) {
+						System.out.println("socket timeout :/");
+						e.printStackTrace();
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+				}
+
+			}
+
+		};
+
+		// start the threads
+		Thread uThread = new Thread(updateStatus);
+		uThread.start();
+
+	}
+
+	/**
+	 * contains logic that decides which elevator should process the request given
+	 * their current states. It then sends the request to that elevator
+	 */
+	private synchronized void scheduleAndSendCmd() {
+
+		// runnable so it can be ran as a thread
+		Runnable sAndS = new Runnable() {
+			@Override
+			public void run() {
+				DatagramPacket cmdPacket;
+				DatagramSocket sendCmdSocket;
+
+				while (true) {
+
+					int elevToSchedule = 1; // elevator id to give the request to
+					int minDistance = 1000; // shortest distance to the passenger
+
+					try {
+						sendCmdSocket = new DatagramSocket();
+
+						synchronized (requestQueue) {
+							synchronized (elevators) {
+								if (!requestQueue.isEmpty() && !elevators.isEmpty()) {
+									// get the request
+									JSONObject firstReq = requestQueue.remove();
+									int currFloor = firstReq.getInt("floor");
+									// iterate through to get the elevator that has the min distance
+									for (int elev : elevators.keySet()) {
+										int distance = Math.abs(currFloor - (elevators.get(elev)).getInt("currFloor"));
+										if (distance < minDistance) {
+											elevToSchedule = elev;
+											minDistance = distance;
+										}
+									}
+
+									// send the request to the selected elevator
+									byte[] cmd = firstReq.toString().getBytes();
+									String inetAdd = (String) elevators.get(elevToSchedule).get("InetAddress");
+									cmdPacket = new DatagramPacket(cmd, cmd.length, InetAddress.getByName(inetAdd),
+											serverPort);
+									sendCmdSocket.send(cmdPacket);
+									sendACK(elevatorACKport, "elevator", InetAddress.getByName(inetAdd));
+
+									// receive an ack here
+								}
+							}
+						}
+						sendCmdSocket.close();
+					} catch (JSONException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+			}
+
+		};
+		// start the threads
+		Thread thread = new Thread(sAndS);
+		thread.start();
+
+	}
+	/**
+	 * sends an ack message to the one who sent the data to be forwarded (accepting
+	 * the data/the reply)
+	 * 
+	 * @param port         to be sent to
+	 * @param sendToSource who the ack should be sent to, the client or server
+	 */
+	private void sendACK(int port, String sendToSource, InetAddress sourceAddress) {
 		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
+			JSONObject ack = new JSONObject();
+			ack.put("message", "ACK");
+			byte[] data = ack.toString().getBytes();
+			DatagramPacket ackPacket = new DatagramPacket(data, data.length, sourceAddress, port);
+			System.out.println("Scheduler: Sending ACK to " + sendToSource + "...");
+			System.out.println("Contents(String) " + ack.toString());
+			ackSocket.send(ackPacket);
+			System.out.println("Scheduler: ACK sent\n");
+		} catch (JSONException e1) {
+			e1.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
 
+	}
+	
 	/**
-	 * gets the controlDate object for testing purposes
 	 * 
-	 * @return the controlDate object
+	 * @return the number of elevators that the scheduler must manage
 	 */
-	public ControlDate getDate() {
-		return this.c;
+	public int getNumElevators() {
+		return elevators.size();
+	}
+	
+	public JSONObject getElevatorInfo(int elevID){
+		return elevators.get(elevID);
 	}
 
 	/**
-	 * overrides the run method from the Runnable interface continuously gets data
-	 * from the buffer to send to the corresponding floor/elevator
+	 * runs the Host program continuously
+	 * 
+	 * @param args
 	 */
-	@Override
-	public void run() {
-
-		while (true) {
-
-			switch (state) {// going through states of machine
-
-			case IDLE: {
-				data = buffer.getData(); // get the data we need
-				if (buffer.getEvent() == Events.RECEIVING_FLOOR) {
-					state = States.RECEIVING;
-				} else if (buffer.getEvent() == Events.RECEIVING_ELEVATOR) {
-					state = States.RECEIVING;
-				} else if (buffer.getEvent() == Events.WAITING) {
-					state = States.IDLE;
-				}
-
-				System.out.println("sch event: " + buffer.getEvent());
-				System.out.println("sch state: " + Scheduler.state + "\n");
-
-				break;
-			}
-
-			case RECEIVING: {
-				if (buffer.getEvent() == Events.RECEIVING_FLOOR) { // scheduler needs to send
-					state = States.SENDING;
-					buffer.setEvent(Events.FLOOR_SENDING);
-				} else if (buffer.getEvent() == Events.RECEIVING_ELEVATOR) {
-					state = States.SENDING;
-					buffer.setEvent(Events.ELEVATOR_SENDING);
-				} else if (buffer.getEvent() == Events.WAITING) {
-					state = States.IDLE;
-				}
-
-				System.out.println("sch event: " + buffer.getEvent());
-				System.out.println("sch state: " + Scheduler.state);
-
-				break;
-			}
-
-			case SENDING: {
-				if (buffer.getEvent() == Events.FLOOR_SENDING) { // send data to floor
-					this.sendRequestToElevator((ControlDate) data[1]);
-					state = States.IDLE;
-				} else if (buffer.getEvent() == Events.ELEVATOR_SENDING) { // send request to elevator
-					this.sendDataToFloor((ControlDate) data[1]);
-					state = States.IDLE;
-				} else if (buffer.getEvent() == Events.WAITING) {
-					state = States.IDLE;
-				}
-
-				System.out.println("sch event: " + buffer.getEvent());
-				System.out.println("sch state: " + Scheduler.state + "\n");
-
-				break;
-			}
-
-			}// end switch
-
+	public static void main(String[] args) {
+		// run the program
+		try {
+			new Scheduler(InetAddress.getLocalHost());
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
 	}
+
 }
