@@ -1,3 +1,5 @@
+package ElevatorSimulator;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -7,35 +9,74 @@ import java.net.UnknownHostException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-enum ElevatorState {
-	// enums for identifying elevator states
-	IDLE, DOOR_OPEN, DOOR_CLOSED, MOVING
-}
+
 
 public class Elevator {
 
-	private DatagramPacket sendPacket, receivePacket, subscribePacket, ackPacket;
+	/**
+	 * ENUM for elevator states
+	 * 
+	 * @author Mariam Almalki, Ruqaya Almalki, Zewen Chen
+	 *
+	 */
+	public enum ElevatorState {
+		IDLE, DOOR_OPEN, DOOR_CLOSED, MOVING
+	}
+	/*
+	 * Sockets and packets used to send and receive to/from the scheduler
+	 */
+	private DatagramPacket receivePacket, subscribePacket, ackPacket;
 	private DatagramSocket sendSocket, receiveSocket, subscribeSocket, ackSocket;
-
-	private int id; // to use in the future when there are multiple elevators
-	private int currFloor;
+	/*
+	 * the scheduler's address
+	 */
+	private InetAddress schedulerAddress;
+	/*
+	 * the elevator state
+	 */
 	public ElevatorState state;
+	/*
+	 * used to as a key by the scheduler to keep track of the number of elevators
+	 */
+	private int id;
+	/*
+	 * the current floor the elevator is at
+	 */
+	private int currFloor;
+
+	/**
+	 * port used to update the status of the elevator with the scheduler
+	 */
 	private int updateStatusPort = 1026;
 
-	private InetAddress schedulerAddress;
-
+	/*
+	 * the ACK port used to communicate with the scheduler
+	 */
 	private int ackPort = 1040;
+	/*
+	 * port used when an elevator wants to subscribe to a scheduler
+	 */
 	private int subscriptionPort = 1035;
+	/*
+	 * object containing all the elevator information
+	 */
 	private JSONObject subObj;
 
+	/**
+	 * Constructor used to initialize all instance variables
+	 * 
+	 * @param id               the elevator identifier used by the scheduler as a
+	 *                         key
+	 * @param schedulerAddress the ip address of the scheduler
+	 */
 	public Elevator(int id, InetAddress schedulerAddress) {
 
 		this.schedulerAddress = schedulerAddress;
-
 		this.id = id;
 		this.currFloor = 1;
 		state = ElevatorState.IDLE;
 
+		// create json and store all the instance variable states
 		subObj = new JSONObject();
 		updateJSONObj();
 
@@ -48,13 +89,14 @@ public class Elevator {
 			sendSocket = new DatagramSocket();
 			ackSocket = new DatagramSocket(ackPort);
 
+			// subscribe to the scheduler, so it knows of its existance
 			subscribePacket = new DatagramPacket(subArr, subArr.length, schedulerAddress, subscriptionPort);
 			subscribeSocket.send(subscribePacket);
 			subscribeSocket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		receiveAndRespond();
+//		receiveAndRespond();
 	}
 
 	/**
@@ -73,32 +115,31 @@ public class Elevator {
 		}
 	}
 
+	/**
+	 * sends the scheduler the state of the elevator (the JSON with all the info)
+	 */
 	private void sendStateUpdate() {
-
 		try {
-
 			byte[] subArr = subObj.toString().getBytes();
 			DatagramPacket updateStatePacket = new DatagramPacket(subArr, subArr.length, schedulerAddress,
 					updateStatusPort);
 			DatagramSocket updateStateSocket = new DatagramSocket();
 			updateStateSocket.send(updateStatePacket);
 			updateStateSocket.close();
-
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
 	/**
-	 * Move the elevator, and send current state to scheduler as it moves.
+	 * Move the elevator to the floor of the passenger, and send current state to
+	 * scheduler as it moves.
 	 * 
-	 * @param obj the JSONObject cmd received by the scheduler
+	 * @param obj the JSONObject command received by the scheduler
 	 */
-	private void moveElevator(JSONObject obj) {
+	public void moveElevator(JSONObject obj) {
 		try {
-			int passengerFloor = obj.getInt("floor"); // passenger is at
+			int passengerFloor = obj.getInt("floor"); // floor passenger is at
 			int dir = currFloor - passengerFloor; // closest floor to passenger
 			if (dir < 0) { // moving up to passenger
 				for (int i = currFloor; i <= passengerFloor; i++) {
@@ -115,12 +156,12 @@ public class Elevator {
 				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 
-			} else if (dir == 0) {
+			} else if (dir == 0) { // already there
 				System.out.println("elevator at passenger floor: open doors");
 				state = ElevatorState.DOOR_OPEN;
 				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
-			} else {
+			} else { // moving down
 				for (int i = currFloor; i >= passengerFloor; i--) {
 					System.out.println("Elevator: moving to floor " + currFloor--);
 					Thread.sleep(2000);
@@ -144,10 +185,15 @@ public class Elevator {
 
 	}
 
-	private void goToDestination(JSONObject obj) {
+	/**
+	 * brings the passenger to their destination floor
+	 * 
+	 * @param obj JSON obj containing the request info
+	 */
+	public void goToDestination(JSONObject obj) {
 		int destinationFloor;
 		try {
-			destinationFloor = obj.getInt("destinationFloor");
+			destinationFloor = obj.getInt("destinationFloor"); // destination of passenger
 			int goToDestination = currFloor - destinationFloor; // closest floor to passenger
 			if (goToDestination < 0) { // moving up to destination floor
 				for (int i = currFloor; i < destinationFloor; i++) {
@@ -156,7 +202,7 @@ public class Elevator {
 					Thread.sleep(2000);
 					updateJSONObj();
 					sendStateUpdate();
-					receiveACK();
+					// receiveACK();
 					state = ElevatorState.MOVING;
 				}
 				state = ElevatorState.DOOR_OPEN;
@@ -164,26 +210,26 @@ public class Elevator {
 				state = ElevatorState.IDLE;
 
 			} else {
-				for (int i = currFloor; i > destinationFloor; i--) {
+				for (int i = currFloor; i > destinationFloor; i--) { // moving down to destination
 					System.out.println("Elevator: moving to floor " + --currFloor);
 					Thread.sleep(2000);
 					updateJSONObj();
 					sendStateUpdate();
-					receiveACK();
+					// receiveACK();
 					state = ElevatorState.MOVING;
 				}
 				state = ElevatorState.DOOR_OPEN;
 				state = ElevatorState.DOOR_CLOSED;
 				state = ElevatorState.IDLE;
-
 			}
 		} catch (JSONException | InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} // passenger is at
-
+		}
 	}
 
+	/**
+	 * receive a request, send an ACK, process the request
+	 */
 	private void receiveAndRespond() {
 
 		String txt;
@@ -229,8 +275,10 @@ public class Elevator {
 		}
 	}
 
+	/**
+	 * method used to receive an ACK sent by the scheduler
+	 */
 	private void receiveACK() {
-
 		byte replyData[] = new byte[100];
 		ackPacket = new DatagramPacket(replyData, replyData.length);
 		try {
@@ -246,28 +294,22 @@ public class Elevator {
 	}
 
 	/**
-	 * runs the Server forever, or until and exception occurs
+	 * creates an instance of the elevator
 	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// run the program
 		try {
 			// for multiple elevators change the id
-			// InetAddress.getLocalHost().getHostName();
-			//InetAddress addr = InetAddress.getByName("cb5107-22");
-			new Elevator(1, InetAddress.getLocalHost());
+			// InetAddress addr = InetAddress.getByName("cb5107-22");
+			(new Elevator(1, InetAddress.getLocalHost())).receiveAndRespond();;
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	/**
-	 * adding state to the elevator open button pressed
-	 * initial<--------------------------------------------->doorOpen close button
-	 * pressed || after 10 seconds ^ | | | | | | | | | data recieve press floor | |
-	 * | | | | | | | moving-----------------------------------------------+ reach
-	 * desFloor
-	 */
+	public int getCurrentFloor() {
+		// TODO Auto-generated method stub
+		return currFloor;
+	}
 }

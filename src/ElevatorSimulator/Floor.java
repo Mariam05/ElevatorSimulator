@@ -1,3 +1,4 @@
+package ElevatorSimulator;
 
 import java.io.*;
 import java.net.DatagramPacket;
@@ -13,35 +14,57 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.Queue;
 
+/**
+ * this class reads the data from the file and puts in a queue. It sends each
+ * request to the Scheduler and waits for an ACK before sending another packet.
+ * this class store read in event Time, floor or elevator number, and button
+ * into a list of ControlData structure.
+ * 
+ * @author Mariam Almalki, Ruqaya Almalki, Zewen Chen
+ *
+ */
 public class Floor {
-	/**
-	 * this class store read in event Time, floor or elevator number, and button
-	 * into a list of ControlData structure
-	 * 
-	 * @author Zewen Chen
-	 */
 
-	/* from a3 client */
-	DatagramSocket sendSocket, receiveSocket;
+	/* variables for RPC */
+	/*
+	 * sockets used to send the requests and receive the ACK from/to the scheduler
+	 */
+	private DatagramSocket sendSocket, receiveSocket;
+	/*
+	 * packets used to send the requests and receive the ACK from/to the scheduler
+	 */
 	private DatagramPacket sendPacket, receivePacket;
-	private static int hostPort = 23;
+	/**
+	 * address and port of the scheduler
+	 */
+	private static int schedulerPort = 23;
+	private InetAddress schedulerAddress;
+
+	/*
+	 * keeps track of the number of requests
+	 */
 	private int i = 0;
 
-	private InetAddress schedulerAddress;
+	/*
+	 * following variables used to read the file and store the important info read
+	 * from them
+	 */
 	File file;
 	private Date date;
 	private Time time;
 	private int floor;
 	private boolean floorButton; // true if up, false if down c
 	private int destinationFloor;
+	/*
+	 * used to stored the info in a accessible data structure
+	 */
 	private ArrayList<ControlDate> datas;
 	private static Queue<ControlDate> requestQueue;
 	private SimpleDateFormat sdf;
 
 	/**
-	 * Constructor used to initialize all instance variables
-	 * 
-	 * @param buffer object used to facilitate sending info to the elevator
+	 * constructor used to initialize instance variables
+	 * @param addr the address of the scheduler
 	 */
 	public Floor(InetAddress addr) {
 
@@ -55,12 +78,10 @@ public class Floor {
 			sendSocket = new DatagramSocket();
 			// bind receiving socket to port 1000
 			receiveSocket = new DatagramSocket(1000);
-			// timeout if not receiving anything
-			// receiveSocket.setSoTimeout(5000);
 		} catch (SocketException se) {
 			se.printStackTrace();
 			System.exit(1);
-		} 
+		}
 		// initiate the sending/receiving of data
 		sendAndReceive();
 	}
@@ -74,7 +95,6 @@ public class Floor {
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			String str;
 			while ((str = br.readLine()) != null) {
-				// System.out.println(str);
 				String[] x = str.split(" ");
 				for (int i = 0; i < x.length; i++) {
 					if (i == 0) {
@@ -117,6 +137,9 @@ public class Floor {
 
 	}
 
+	/**
+	 * sends the request to the scheduler, and waits for an ACK before sending another request
+	 */
 	public void sendAndReceive() {
 		byte msg[] = null;
 		String msgString = "";
@@ -133,7 +156,7 @@ public class Floor {
 
 			try {
 				// sending packet to host
-				sendPacket = new DatagramPacket(msg, msg.length, schedulerAddress, hostPort);
+				sendPacket = new DatagramPacket(msg, msg.length, schedulerAddress, schedulerPort);
 				System.out.println("Floor: request count " + i++);
 				System.out.println("Contents (String): " + msgString);
 				System.out.println("Contents (Bytes): " + sendPacket.getData());
@@ -145,11 +168,10 @@ public class Floor {
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
-				// get a reply from the host, any reply
+				// waiting for ack from scheduler
 				byte data[] = new byte[100];
 				receivePacket = new DatagramPacket(data, data.length);
 
@@ -173,12 +195,19 @@ public class Floor {
 
 		}
 	}
+	
+	public ControlDate getdata(int i) {
+		return this.datas.get(i);
+	}
 
+	/**
+	 * creates an instance of floor and runs it
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		try {
 			new Floor(InetAddress.getLocalHost());
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

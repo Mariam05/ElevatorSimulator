@@ -1,6 +1,6 @@
-//package ElevatorSimulator;
-
+package ElevatorSimulator;
 import java.sql.Time;
+
 import org.json.*;
 
 public class ControlDate {
@@ -12,7 +12,6 @@ public class ControlDate {
 	 * button
 	 * 
 	 */
-
 	private int floor;
 	private boolean floorButton; // true if up, false if down c
 	private int destinationFloor;
