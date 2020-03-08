@@ -31,7 +31,7 @@ DESCRIPTION:
 **Defa Hu** : Test Cases <br>
 **Henry Wilson** : UMLs Sequence/Class Diagrams <br>
 **Ruqaya Almalki**: RPC, scheduler logic, README <br>
-**Mariam Almalki** : RPC, scheduler logic, Test <br>
+**Mariam Almalki** : RPC, scheduler logic, Scheduler Test <br>
 
 ### Explanation of File Names
 - **Floor**: reads info from a file, sends the requests to the Scheduler, waits for an ACK before sending another packet
@@ -48,10 +48,10 @@ Note:
 2.	When running on different machines, the ip addresses fed into the scheduler, the floor, and the elevator need to be changed in order to reflect the ip addresses of the machines used.
 
 ### Test Instructions 
-Test cases are standard JUnit 4 Tests. Right click on the AllTests() class in the Tests package then Run As -> Junit Test to test all the classes. Be mindful that SchedulerTest takes some time to complete.
+Test cases are standard JUnit 5 Tests. Be sure to run each test individually to ensure that an address binding exception does not occur. 
 
 ### Reflection of Concurrency between iteration 2 and 3
-In iteration 2 we used many boolean variables to ensure critical sections were encapsulated and only used 3 threads one for each entity. Whereas in iteration 3, we used various threads running concurrently, allowing the transfer of information (sending and receiving) to be more efficient. Increasing the amount of threads, and allocating each thread to implement a function allows the program to be running in such a way that it doesn't have to wait for a long time. Various threads could be sending/receiving information at the same time without conflict. In iteration 3, we synchronized the HashMap containing the elevator info and the queue containing the passenger requests. This is because both of these data structures are accessed by different threads, therefore making them a critical section within the code that needs to have regulated access.
+In iteration 2 we used many boolean variables to ensure critical sections were encapsulated and only used 3 threads one for each entity. Whereas in iteration 3, we used various threads running concurrently, allowing the transfer of information (sending and receiving) to be more efficient. Increasing the amount of threads, and allocating each thread to implement a function allows the program to be running in such a way that it doesn't have to wait for a long time. For example, the scheduler could be registering new elevators and receiving data from the floor at the same time. Various threads could be sending/receiving information at the same time without conflict. However, because of this, we synchronized the HashMap containing the elevator info and the queue containing the passenger requests. This is because both of these data structures are accessed by different threads, therefore making them a critical section within the code that needs to have regulated access.
 
 ### UML Class Diagram
 This can also be found as a png file in the project zip file. <br>

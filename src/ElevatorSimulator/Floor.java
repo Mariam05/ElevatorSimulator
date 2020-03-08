@@ -83,7 +83,7 @@ public class Floor {
 			System.exit(1);
 		}
 		// initiate the sending/receiving of data
-		sendAndReceive();
+//		sendAndReceive();
 	}
 
 	/**
@@ -206,7 +206,7 @@ public class Floor {
 	 */
 	public static void main(String[] args) {
 		try {
-			new Floor(InetAddress.getLocalHost());
+			(new Floor(InetAddress.getLocalHost())).sendAndReceive();;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}

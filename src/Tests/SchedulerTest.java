@@ -4,6 +4,8 @@ import ElevatorSimulator.*;
 
 import static org.junit.Assert.*;
 
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Time;
@@ -23,7 +25,12 @@ public class SchedulerTest {
 	private static JSONObject subObj;
 
 	/**
-	 * Test to ensure that an elevator can subscribe to the scheduler
+	 * This test does many things. 
+	 * The reason they are not split into multiple tests is because that would result in a binding exception.
+	 * The tests that this case covers are:
+	 * - successful subscription of elevator to schedule
+	 * - successful update of elevator state in schedule 
+	 * - successful receiving of data
 	 */
 	@Test
 	public void test() {
@@ -56,21 +63,25 @@ public class SchedulerTest {
 			assertFalse((s.getElevatorInfo(1).toString()).equals(elevInitState.toString()));
 			
 			/* Test that scheduler receives data from floor */
-			//ControlDate c = new ControlDate()
-//			SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.S");
-//			Date date = sdf.parse("09:09:09.1");
-//			Time time = new Time(date.getTime());
-//			//Floor f = new Floor(InetAddress.getLocalHost());
-//			System.out.println("REQUESTS FROM FLOOR: " + s.getNumRequests());
-//			Thread.sleep(500);
-//			assertTrue(s.getNumRequests() > 0);
-//			
-//			ControlDate c = new ControlDate(time, 5, false, 2);
 			
+			SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.S");
+			Date date = sdf.parse("09:09:09.1");
+			Time time = new Time(date.getTime());
 			
+			ControlDate c = new ControlDate(time, 5, false, 2);	
 			
-		} catch (UnknownHostException | InterruptedException | JSONException e) {
-			// TODO Auto-generated catch block
+			byte msg[] =c.getByteArray();
+			String msgString =  c.toString();
+			// sending packet to host
+			DatagramPacket sendPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), 23);
+			DatagramSocket sendSocket = new DatagramSocket();
+			sendSocket.send(sendPacket);
+			Thread.sleep(500); // give it time to update
+			System.out.println("REQUESTS  " + s.currReq);
+			assertTrue(s.currReq != null);
+			sendSocket.close();
+			
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

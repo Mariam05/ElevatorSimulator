@@ -100,6 +100,14 @@ public class Elevator {
 	}
 
 	/**
+	 * Set the current floor to the desired floor. 
+	 * This method is used for testing purposes only. 
+	 * @param floor the floor to set the elevator to 
+	 */
+	public void setCurrFloor(int floor) {
+		this.currFloor = floor;
+	}
+	/**
 	 * Info on the elevator in JSON format
 	 */
 	private void updateJSONObj() {

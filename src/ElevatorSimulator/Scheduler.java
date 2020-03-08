@@ -33,6 +33,8 @@ public class Scheduler {
 	public enum States {
 		UPDATING
 	}
+	
+	public JSONObject currReq;
 
 	/**
 	 * contains a list of all the subscribed elevators and their contents
@@ -121,9 +123,11 @@ public class Scheduler {
 						// process the received packet
 						txt = new String(data, 0, receivePacket.getLength());
 						JSONObject obj2 = new JSONObject(txt);
+						currReq = obj2;
 						synchronized (requestQueue) {
 							requestQueue.add(obj2);
 						}
+						System.out.println("Queue " + requestQueue.size());
 						System.out.println("Scheduler: Packet received from floor");
 						System.out.println("Contents (String): " + txt);
 						System.out.println("Contents (Bytes): " + receivePacket.getData() + "\n");
