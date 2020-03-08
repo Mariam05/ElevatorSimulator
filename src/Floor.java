@@ -37,7 +37,6 @@ public class Floor {
 	private ArrayList<ControlDate> datas;
 	private static Queue<ControlDate> requestQueue;
 	private SimpleDateFormat sdf;
-	private boolean receivedData;
 
 	/**
 	 * Constructor used to initialize all instance variables
@@ -48,7 +47,6 @@ public class Floor {
 
 		try {
 			schedulerAddress = addr;
-			this.receivedData = true; // initialized to true so that it runs the first time
 			this.file = new File("data.txt");
 			this.datas = new ArrayList<ControlDate>();
 			this.requestQueue = new LinkedList<>();

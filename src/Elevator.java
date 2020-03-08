@@ -156,7 +156,7 @@ public class Elevator {
 					Thread.sleep(2000);
 					updateJSONObj();
 					sendStateUpdate();
-					// receiveACK();
+					receiveACK();
 					state = ElevatorState.MOVING;
 				}
 				state = ElevatorState.DOOR_OPEN;
@@ -169,7 +169,7 @@ public class Elevator {
 					Thread.sleep(2000);
 					updateJSONObj();
 					sendStateUpdate();
-					// receiveACK();
+					receiveACK();
 					state = ElevatorState.MOVING;
 				}
 				state = ElevatorState.DOOR_OPEN;

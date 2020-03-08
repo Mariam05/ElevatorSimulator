@@ -1,6 +1,5 @@
 //package ElevatorSimulator;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+
 import java.sql.Time;
 import org.json.*;
 
