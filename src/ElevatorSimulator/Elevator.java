@@ -20,7 +20,7 @@ public class Elevator {
 	 *
 	 */
 	public enum ElevatorState {
-		IDLE, DOOR_OPEN, DOOR_CLOSED, MOVING
+		IDLE, DOOR_OPEN, DOOR_CLOSED, UP, DOWN
 	}
 	/*
 	 * Sockets and packets used to send and receive to/from the scheduler
@@ -156,7 +156,7 @@ public class Elevator {
 					updateJSONObj();
 					sendStateUpdate();
 					// receiveACK();
-					state = ElevatorState.MOVING;
+					state = ElevatorState.UP;
 				}
 				currFloor--;
 				state = ElevatorState.DOOR_OPEN;
@@ -176,7 +176,7 @@ public class Elevator {
 					updateJSONObj();
 					sendStateUpdate();
 					// receiveACK();
-					state = ElevatorState.MOVING;
+					state = ElevatorState.DOWN;
 				}
 				currFloor++;
 				state = ElevatorState.DOOR_OPEN;
@@ -211,7 +211,7 @@ public class Elevator {
 					updateJSONObj();
 					sendStateUpdate();
 					// receiveACK();
-					state = ElevatorState.MOVING;
+					state = ElevatorState.UP;
 				}
 				state = ElevatorState.DOOR_OPEN;
 				state = ElevatorState.DOOR_CLOSED;
@@ -224,7 +224,7 @@ public class Elevator {
 					updateJSONObj();
 					sendStateUpdate();
 					// receiveACK();
-					state = ElevatorState.MOVING;
+					state = ElevatorState.DOWN;
 				}
 				state = ElevatorState.DOOR_OPEN;
 				state = ElevatorState.DOOR_CLOSED;
