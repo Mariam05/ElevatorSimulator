@@ -154,9 +154,10 @@ public class Elevator {
 					System.out.println("Elevator: moving to floor " + currFloor++);
 					Thread.sleep(2000);
 					updateJSONObj();
+					state = ElevatorState.UP;
 					sendStateUpdate();
 					// receiveACK();
-					state = ElevatorState.UP;
+					
 				}
 				currFloor--;
 				state = ElevatorState.DOOR_OPEN;
@@ -174,9 +175,10 @@ public class Elevator {
 					System.out.println("Elevator: moving to floor " + currFloor--);
 					Thread.sleep(2000);
 					updateJSONObj();
+					state = ElevatorState.DOWN;
 					sendStateUpdate();
 					// receiveACK();
-					state = ElevatorState.DOWN;
+					
 				}
 				currFloor++;
 				state = ElevatorState.DOOR_OPEN;
@@ -209,9 +211,10 @@ public class Elevator {
 					System.out.println("Elevator: moving to floor " + ++currFloor);
 					Thread.sleep(2000);
 					updateJSONObj();
+					state = ElevatorState.UP;
 					sendStateUpdate();
 					// receiveACK();
-					state = ElevatorState.UP;
+					
 				}
 				state = ElevatorState.DOOR_OPEN;
 				state = ElevatorState.DOOR_CLOSED;
@@ -222,9 +225,10 @@ public class Elevator {
 					System.out.println("Elevator: moving to floor " + --currFloor);
 					Thread.sleep(2000);
 					updateJSONObj();
+					state = ElevatorState.DOWN;
 					sendStateUpdate();
 					// receiveACK();
-					state = ElevatorState.DOWN;
+					
 				}
 				state = ElevatorState.DOOR_OPEN;
 				state = ElevatorState.DOOR_CLOSED;
