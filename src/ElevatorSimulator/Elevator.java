@@ -9,7 +9,17 @@ import java.net.UnknownHostException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
+/**
+ * Things we need to do :
+ * - Split moving state into moving up and moving down
+ * - Have a data structure that holds all the requests sent to it. 
+ *
+ * - sort the floors it needs to go to and go to them in order. 
+ * - Have a thread to receive requests and a thread to move
+ * 
+ * @author Misho
+ *
+ */
 
 public class Elevator {
 

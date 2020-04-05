@@ -250,6 +250,9 @@ public class Scheduler {
 	}
 
 	/**
+	 * 
+	 * Change so that:
+	 * - only send request if state of elevator is the same or if state of elevator is idle. 
 	 * contains logic that decides which elevator should process the request given
 	 * their current states. It then sends the request to that elevator
 	 */
