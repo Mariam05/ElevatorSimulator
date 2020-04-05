@@ -30,7 +30,7 @@ public class Elevator {
 	 *
 	 */
 	public enum ElevatorState {
-		IDLE, DOOR_OPEN, DOOR_CLOSED, MOVING
+		IDLE, DOOR_OPEN, DOOR_CLOSED, UP, DOWN
 	}
 	/*
 	 * Sockets and packets used to send and receive to/from the scheduler
@@ -164,9 +164,10 @@ public class Elevator {
 					System.out.println("Elevator: moving to floor " + currFloor++);
 					Thread.sleep(2000);
 					updateJSONObj();
+					state = ElevatorState.UP;
 					sendStateUpdate();
 					// receiveACK();
-					state = ElevatorState.MOVING;
+					
 				}
 				currFloor--;
 				state = ElevatorState.DOOR_OPEN;
@@ -184,9 +185,10 @@ public class Elevator {
 					System.out.println("Elevator: moving to floor " + currFloor--);
 					Thread.sleep(2000);
 					updateJSONObj();
+					state = ElevatorState.DOWN;
 					sendStateUpdate();
 					// receiveACK();
-					state = ElevatorState.MOVING;
+					
 				}
 				currFloor++;
 				state = ElevatorState.DOOR_OPEN;
@@ -219,9 +221,10 @@ public class Elevator {
 					System.out.println("Elevator: moving to floor " + ++currFloor);
 					Thread.sleep(2000);
 					updateJSONObj();
+					state = ElevatorState.UP;
 					sendStateUpdate();
 					// receiveACK();
-					state = ElevatorState.MOVING;
+					
 				}
 				state = ElevatorState.DOOR_OPEN;
 				state = ElevatorState.DOOR_CLOSED;
@@ -232,9 +235,10 @@ public class Elevator {
 					System.out.println("Elevator: moving to floor " + --currFloor);
 					Thread.sleep(2000);
 					updateJSONObj();
+					state = ElevatorState.DOWN;
 					sendStateUpdate();
 					// receiveACK();
-					state = ElevatorState.MOVING;
+					
 				}
 				state = ElevatorState.DOOR_OPEN;
 				state = ElevatorState.DOOR_CLOSED;
