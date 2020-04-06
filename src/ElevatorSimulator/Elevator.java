@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Random;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +31,7 @@ public class Elevator {
 	 *
 	 */
 	public enum ElevatorState {
-		IDLE, DOOR_OPEN, DOOR_CLOSED, UP, DOWN
+		IDLE, DOOR_OPEN, DOOR_CLOSED, UP, DOWN, FIXING_DOORS
 	}
 	/*
 	 * Sockets and packets used to send and receive to/from the scheduler
@@ -150,6 +151,27 @@ public class Elevator {
 	}
 
 	/**
+	 * This method randomly determines whether a door jam occurs.
+	 * If yes, then we give the fixer guy time to fix it. 
+	 */
+	private void checkDoorFault() {
+		Random r = new Random();
+		
+		int val = r.nextInt(10); // generate a number between 0 and 9 (inclusive)
+		
+		if (val >= 6) {
+			state = ElevatorState.FIXING_DOORS;
+			System.out.println("Door is jamed. Please stand by while fixing ....");
+			try {
+				Thread.sleep(3000); // give it time to fix. 
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.println("Fixed!");
+		} 	
+	}
+	/**
 	 * Move the elevator to the floor of the passenger, and send current state to
 	 * scheduler as it moves.
 	 * 
@@ -171,13 +193,15 @@ public class Elevator {
 				}
 				currFloor--;
 				state = ElevatorState.DOOR_OPEN;
-				System.out.println("got to passenger...now moving to destination:");
+				System.out.println("got to passenger(s) who made the request");
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 
 			} else if (dir == 0) { // already there
 				System.out.println("elevator at passenger floor: open doors");
 				state = ElevatorState.DOOR_OPEN;
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 			} else { // moving down
@@ -192,7 +216,8 @@ public class Elevator {
 				}
 				currFloor++;
 				state = ElevatorState.DOOR_OPEN;
-				System.out.println("got to passenger...now moving to destination:");
+				System.out.println("got to passenger(s) who made the request");
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 			}
@@ -334,4 +359,6 @@ public class Elevator {
 		// TODO Auto-generated method stub
 		return currFloor;
 	}
+	
+
 }

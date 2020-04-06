@@ -13,17 +13,14 @@ public class Clock {
 	/**
 	 * Number of seconds passed since clock started
 	 */
-	private int count;
+	private static int count = 0;
 
-	public Clock() {
-		count = 0;
-		incrementClock();
-	}
+	
 
 	/**
 	 * Thread to increment the clock every second.
 	 */
-	public void incrementClock() {
+	public static void startClock() {
 		Runnable incrementClock = new Runnable() {
 
 			@Override
@@ -49,7 +46,7 @@ public class Clock {
 	 * 
 	 * @return int representing the number of seconds passed since clock started
 	 */
-	public int getCurrTime() {
+	public static int getCurrTime() {
 		return count;
 	}
 	
@@ -58,7 +55,7 @@ public class Clock {
 	 * @param time the time in seconds to time
 	 * @throws Exception when the timer goes off
 	 */
-	public void startTimer(int time) throws Exception {
+	public static void startTimer(int time) throws Exception {
 		for (int i = 0; i < time; i++) {
 			Thread.sleep(1000);
 		}
