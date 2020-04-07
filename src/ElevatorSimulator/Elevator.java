@@ -5,11 +5,20 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Random;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
+/**
+ * This floor represents an elevator. 
+ * An elevator has states. 
+ * An elevator can have 2 different faults: 
+ * - A timing floor fault (this is fatal, ends the systems)
+ * - A door jam fault (this fault is transient, we will recover)
+ * The floor timing error is hard coded in line 6 of the data file. 
+ *
+ */
 
 public class Elevator {
 
@@ -19,9 +28,16 @@ public class Elevator {
 	 * @author Mariam Almalki, Ruqaya Almalki, Zewen Chen
 	 *
 	 */
+	
+	
 	public enum ElevatorState {
-		IDLE, DOOR_OPEN, DOOR_CLOSED, UP, DOWN
+		IDLE, DOOR_OPEN, DOOR_CLOSED, UP, DOWN, FIXING_DOORS
 	}
+
+	/*
+	 * boolean to indicate fault
+	 * */
+	private boolean fault = false;
 	/*
 	 * Sockets and packets used to send and receive to/from the scheduler
 	 */
@@ -63,6 +79,15 @@ public class Elevator {
 	private JSONObject subObj;
 
 	/**
+	 * Keeps track of the current value of the timer
+	 */
+	private int timer;
+	
+	/**
+	 * Value to initialize timer to
+	 */
+	private static int timer_time = 6;
+	/**
 	 * Constructor used to initialize all instance variables
 	 * 
 	 * @param id               the elevator identifier used by the scheduler as a
@@ -75,6 +100,7 @@ public class Elevator {
 		this.id = id;
 		this.currFloor = 1;
 		state = ElevatorState.IDLE;
+		timer = timer_time; 
 
 		// create json and store all the instance variable states
 		subObj = new JSONObject();
@@ -84,12 +110,11 @@ public class Elevator {
 
 		try {
 			// server is bounded to port 69
-			receiveSocket = new DatagramSocket(69);
 			subscribeSocket = new DatagramSocket();
 			sendSocket = new DatagramSocket();
 			ackSocket = new DatagramSocket(ackPort);
 
-			// subscribe to the scheduler, so it knows of its existance
+			// subscribe to the scheduler, so it knows of its existence
 			subscribePacket = new DatagramPacket(subArr, subArr.length, schedulerAddress, subscriptionPort);
 			subscribeSocket.send(subscribePacket);
 			subscribeSocket.close();
@@ -100,13 +125,15 @@ public class Elevator {
 	}
 
 	/**
-	 * Set the current floor to the desired floor. 
-	 * This method is used for testing purposes only. 
-	 * @param floor the floor to set the elevator to 
+	 * Set the current floor to the desired floor. This method is used for testing
+	 * purposes only.
+	 * 
+	 * @param floor the floor to set the elevator to
 	 */
 	public void setCurrFloor(int floor) {
 		this.currFloor = floor;
 	}
+
 	/**
 	 * Info on the elevator in JSON format
 	 */
@@ -140,6 +167,47 @@ public class Elevator {
 	}
 
 	/**
+	 * This method randomly determines whether a door jam occurs. If yes, then we
+	 * give the fixer guy time to fix it.
+	 */
+	private void checkDoorFault() {
+		Random r = new Random();
+
+		int val = r.nextInt(10); // generate a number between 0 and 9 (inclusive)
+
+		if (val >= 6) {
+			state = ElevatorState.FIXING_DOORS;
+			System.out.println("Door is jamed. Please stand by while fixing ....");
+			fault = true;
+			
+			try {
+				Thread.sleep(3000); // give it time to fix.
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			fault = false;
+			System.out.println("Fixed!");
+		}
+	}
+	
+	public void checkDoorFaultTest(int x) {
+		
+		if (x >= 6) {
+			state = ElevatorState.FIXING_DOORS;
+			System.out.println("Door is jamed. Please stand by while fixing ....");
+			fault = true;
+			
+			try {
+				Thread.sleep(3000); // give it time to fix.
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			fault = false;
+			System.out.println("Fixed!");
+		}
+	}
+
+	/**
 	 * Move the elevator to the floor of the passenger, and send current state to
 	 * scheduler as it moves.
 	 * 
@@ -147,52 +215,67 @@ public class Elevator {
 	 */
 	public void moveElevator(JSONObject obj) {
 		try {
+			timer = timer_time;
 			int passengerFloor = obj.getInt("floor"); // floor passenger is at
 			int dir = currFloor - passengerFloor; // closest floor to passenger
 			if (dir < 0) { // moving up to passenger
 				for (int i = currFloor; i <= passengerFloor; i++) {
 					System.out.println("Elevator: moving to floor " + currFloor++);
+					updateTimer();
 					Thread.sleep(2000);
 					updateJSONObj();
 					state = ElevatorState.UP;
 					sendStateUpdate();
 					// receiveACK();
-					
+
 				}
 				currFloor--;
 				state = ElevatorState.DOOR_OPEN;
-				System.out.println("got to passenger...now moving to destination:");
+				System.out.println("got to passenger(s) who made the request");
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 
 			} else if (dir == 0) { // already there
 				System.out.println("elevator at passenger floor: open doors");
 				state = ElevatorState.DOOR_OPEN;
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 			} else { // moving down
 				for (int i = currFloor; i >= passengerFloor; i--) {
 					System.out.println("Elevator: moving to floor " + currFloor--);
 					Thread.sleep(2000);
+					updateTimer();
 					updateJSONObj();
 					state = ElevatorState.DOWN;
 					sendStateUpdate();
 					// receiveACK();
-					
 				}
 				currFloor++;
 				state = ElevatorState.DOOR_OPEN;
-				System.out.println("got to passenger...now moving to destination:");
+				System.out.println("got to passenger(s) who made the request");
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 			}
 
-		} catch (JSONException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		} 
 
+	}
+	
+	/**
+	 * If the timer reaches 0, it means that it the elevator took way too long to reach the floor 
+	 * and there is an error
+	 * @throws Exception if the timer has reached 0
+	 */
+	private void updateTimer() throws Exception {
+		timer--;
+		if (timer == 0) {
+			throw new Exception("Fatal floor timing error.. exiting");
+		}
 	}
 
 	/**
@@ -203,39 +286,47 @@ public class Elevator {
 	public void goToDestination(JSONObject obj) {
 		int destinationFloor;
 		try {
+			timer = timer_time;
 			destinationFloor = obj.getInt("destinationFloor"); // destination of passenger
 			int goToDestination = currFloor - destinationFloor; // closest floor to passenger
 			if (goToDestination < 0) { // moving up to destination floor
 				for (int i = currFloor; i < destinationFloor; i++) {
 
 					System.out.println("Elevator: moving to floor " + ++currFloor);
+					updateTimer();
 					Thread.sleep(2000);
+					
 					updateJSONObj();
 					state = ElevatorState.UP;
 					sendStateUpdate();
 					// receiveACK();
-					
+
 				}
 				state = ElevatorState.DOOR_OPEN;
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				state = ElevatorState.IDLE;
 
 			} else {
 				for (int i = currFloor; i > destinationFloor; i--) { // moving down to destination
 					System.out.println("Elevator: moving to floor " + --currFloor);
+					updateTimer();
 					Thread.sleep(2000);
+					
 					updateJSONObj();
 					state = ElevatorState.DOWN;
 					sendStateUpdate();
 					// receiveACK();
-					
+
 				}
 				state = ElevatorState.DOOR_OPEN;
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				state = ElevatorState.IDLE;
 			}
-		} catch (JSONException | InterruptedException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 
@@ -314,14 +405,25 @@ public class Elevator {
 		try {
 			// for multiple elevators change the id
 			// InetAddress addr = InetAddress.getByName("cb5107-22");
-			(new Elevator(1, InetAddress.getLocalHost())).receiveAndRespond();;
+			(new Elevator(1, InetAddress.getLocalHost())).receiveAndRespond();
+			;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
 	}
-
+	
+	/***
+	 * getter and setter for fault flag 
+	 */
+	public void setFaultFlag(boolean x) {
+		this.fault=x;
+	}
+	public boolean getFaultFlag() {
+		return this.fault;
+	}
 	public int getCurrentFloor() {
 		// TODO Auto-generated method stub
 		return currFloor;
 	}
+
 }

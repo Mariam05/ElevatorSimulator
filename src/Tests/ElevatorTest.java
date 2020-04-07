@@ -1,6 +1,8 @@
 package Tests;
 
 import ElevatorSimulator.*;
+
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.net.InetAddress;
@@ -37,7 +39,8 @@ public class ElevatorTest {
 		subObj.put("currFloor", 1);
 		subObj.put("State", Elevator.ElevatorState.IDLE );
 		subObj.put("destinationFloor", 5);
-		
+		elevator.setFaultFlag(true);
+		elevator.checkDoorFaultTest(9);
 	}
 
 	
@@ -45,7 +48,11 @@ public class ElevatorTest {
 	public void testgoToDestination() {
 		elevator.goToDestination(subObj);
 		assertTrue(5 == elevator.getCurrentFloor());
+		
 	}
-
-
+	@Test
+	public void chcekFaulte() {
+		assertFalse(elevator.getFaultFlag());
+		
+	}
 }
