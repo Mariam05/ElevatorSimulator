@@ -47,8 +47,8 @@ public class FloorTest {
 			msg[1] = new ControlDate(time[1], 2, true, 4);
 			msg[2] = new ControlDate(time[2], 4, true, 6);
 			msg[3] = new ControlDate(time[3], 3, false, 1);
-			msg[4] = new ControlDate(time[4], 2, true, 4);
-			msg[5] = new ControlDate(time[5], 1, true, 6);
+			msg[4] = new ControlDate(time[4], 1, true, 9);
+			msg[5] = new ControlDate(time[5], 2, true, 5);
 			msg[6] = new ControlDate(time[6], 6, false, 2);
 			msg[7] = new ControlDate(time[7], 2, false, 1);
 			msg[8] = new ControlDate(time[8], 1, true, 4);

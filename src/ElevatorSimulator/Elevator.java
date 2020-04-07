@@ -5,11 +5,18 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Random;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
+/**
+ * This floor represents an elevator. An elevator has states. An elevator can
+ * have 2 different faults: - A timing floor fault (this is fatal, ends the
+ * systems) - A door jam fault (this fault is transient, we will recover) The
+ * floor timing error is hard coded in line 6 of the data file.
+ *
+ */
 
 public class Elevator {
 
@@ -20,26 +27,27 @@ public class Elevator {
 	 *
 	 */
 	public enum ElevatorState {
-		IDLE, DOOR_OPEN, DOOR_CLOSED, UP, DOWN
+		IDLE, DOOR_OPEN, DOOR_CLOSED, UP, DOWN, FIXING_DOORS
 	}
-	/*
+
+	/**
 	 * Sockets and packets used to send and receive to/from the scheduler
 	 */
 	private DatagramPacket receivePacket, subscribePacket, ackPacket;
 	private DatagramSocket sendSocket, receiveSocket, subscribeSocket, ackSocket;
-	/*
+	/**
 	 * the scheduler's address
 	 */
 	private InetAddress schedulerAddress;
-	/*
+	/**
 	 * the elevator state
 	 */
 	public ElevatorState state;
-	/*
+	/**
 	 * used to as a key by the scheduler to keep track of the number of elevators
 	 */
 	private int id;
-	/*
+	/**
 	 * the current floor the elevator is at
 	 */
 	private int currFloor;
@@ -49,18 +57,33 @@ public class Elevator {
 	 */
 	private int updateStatusPort = 1026;
 
-	/*
+	/**
 	 * the ACK port used to communicate with the scheduler
 	 */
 	private int ackPort = 1040;
-	/*
+	/**
 	 * port used when an elevator wants to subscribe to a scheduler
 	 */
 	private int subscriptionPort = 1035;
-	/*
+	/**
 	 * object containing all the elevator information
 	 */
 	private JSONObject subObj;
+
+	/**
+	 * Keeps track of the current value of the timer
+	 */
+	private int timer;
+
+	/**
+	 * Value to initialize timer to
+	 */
+	private static int timer_time = 6;
+
+	/*
+	 * boolean to indicate fault
+	 */
+	private boolean fault = false, tFault = false;
 
 	/**
 	 * Constructor used to initialize all instance variables
@@ -75,6 +98,7 @@ public class Elevator {
 		this.id = id;
 		this.currFloor = 1;
 		state = ElevatorState.IDLE;
+		timer = timer_time;
 
 		// create json and store all the instance variable states
 		subObj = new JSONObject();
@@ -89,7 +113,7 @@ public class Elevator {
 			sendSocket = new DatagramSocket();
 			ackSocket = new DatagramSocket(ackPort);
 
-			// subscribe to the scheduler, so it knows of its existance
+			// subscribe to the scheduler, so it knows of its existence
 			subscribePacket = new DatagramPacket(subArr, subArr.length, schedulerAddress, subscriptionPort);
 			subscribeSocket.send(subscribePacket);
 			subscribeSocket.close();
@@ -100,13 +124,15 @@ public class Elevator {
 	}
 
 	/**
-	 * Set the current floor to the desired floor. 
-	 * This method is used for testing purposes only. 
-	 * @param floor the floor to set the elevator to 
+	 * Set the current floor to the desired floor. This method is used for testing
+	 * purposes only.
+	 * 
+	 * @param floor the floor to set the elevator to
 	 */
 	public void setCurrFloor(int floor) {
 		this.currFloor = floor;
 	}
+
 	/**
 	 * Info on the elevator in JSON format
 	 */
@@ -140,6 +166,27 @@ public class Elevator {
 	}
 
 	/**
+	 * This method randomly determines whether a door jam occurs. If yes, then we
+	 * give the fixer guy time to fix it.
+	 */
+	private void checkDoorFault() {
+		Random r = new Random();
+
+		int val = r.nextInt(10); // generate a number between 0 and 9 (inclusive)
+
+		if (val >= 7) {
+			state = ElevatorState.FIXING_DOORS;
+			System.out.println("Door is jamed. Please stand by while fixing ....");
+			try {
+				Thread.sleep(3000); // give it time to fix.
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			System.out.println("Fixed!");
+		}
+	}
+
+	/**
 	 * Move the elevator to the floor of the passenger, and send current state to
 	 * scheduler as it moves.
 	 * 
@@ -147,52 +194,70 @@ public class Elevator {
 	 */
 	public void moveElevator(JSONObject obj) {
 		try {
+			timer = timer_time;
 			int passengerFloor = obj.getInt("floor"); // floor passenger is at
 			int dir = currFloor - passengerFloor; // closest floor to passenger
 			if (dir < 0) { // moving up to passenger
 				for (int i = currFloor; i <= passengerFloor; i++) {
+					updateTimer();
 					System.out.println("Elevator: moving to floor " + currFloor++);
+					
 					Thread.sleep(2000);
 					updateJSONObj();
 					state = ElevatorState.UP;
 					sendStateUpdate();
 					// receiveACK();
-					
+
 				}
 				currFloor--;
 				state = ElevatorState.DOOR_OPEN;
-				System.out.println("got to passenger...now moving to destination:");
+				System.out.println("got to passenger(s) who made the request");
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 
 			} else if (dir == 0) { // already there
 				System.out.println("elevator at passenger floor: open doors");
 				state = ElevatorState.DOOR_OPEN;
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 			} else { // moving down
 				for (int i = currFloor; i >= passengerFloor; i--) {
+					updateTimer();
 					System.out.println("Elevator: moving to floor " + currFloor--);
 					Thread.sleep(2000);
 					updateJSONObj();
 					state = ElevatorState.DOWN;
 					sendStateUpdate();
 					// receiveACK();
-					
 				}
 				currFloor++;
 				state = ElevatorState.DOOR_OPEN;
-				System.out.println("got to passenger...now moving to destination:");
+				System.out.println("got to passenger(s) who made the request");
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				goToDestination(obj);
 			}
 
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
+	}
+
+	/**
+	 * If the timer reaches 0, it means that it the elevator took way too long to
+	 * reach the floor and there is an error
+	 * 
+	 * @throws Exception if the timer has reached 0
+	 */
+	private void updateTimer() throws Exception {
+		timer--;
+		if (timer == 0) {
+			tFault = true;
+			throw new Exception("Fatal floor timing error.. exiting");
+		}
 	}
 
 	/**
@@ -203,39 +268,48 @@ public class Elevator {
 	public void goToDestination(JSONObject obj) {
 		int destinationFloor;
 		try {
+			timer = timer_time;
 			destinationFloor = obj.getInt("destinationFloor"); // destination of passenger
 			int goToDestination = currFloor - destinationFloor; // closest floor to passenger
 			if (goToDestination < 0) { // moving up to destination floor
 				for (int i = currFloor; i < destinationFloor; i++) {
-
+					updateTimer();
 					System.out.println("Elevator: moving to floor " + ++currFloor);
+					
 					Thread.sleep(2000);
+
 					updateJSONObj();
 					state = ElevatorState.UP;
 					sendStateUpdate();
 					// receiveACK();
-					
+
 				}
 				state = ElevatorState.DOOR_OPEN;
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				state = ElevatorState.IDLE;
 
 			} else {
 				for (int i = currFloor; i > destinationFloor; i--) { // moving down to destination
+					updateTimer();
 					System.out.println("Elevator: moving to floor " + --currFloor);
+					
 					Thread.sleep(2000);
+
 					updateJSONObj();
 					state = ElevatorState.DOWN;
 					sendStateUpdate();
 					// receiveACK();
-					
+
 				}
 				state = ElevatorState.DOOR_OPEN;
+				checkDoorFault();
 				state = ElevatorState.DOOR_CLOSED;
 				state = ElevatorState.IDLE;
 			}
-		} catch (JSONException | InterruptedException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 
@@ -314,14 +388,93 @@ public class Elevator {
 		try {
 			// for multiple elevators change the id
 			// InetAddress addr = InetAddress.getByName("cb5107-22");
-			(new Elevator(1, InetAddress.getLocalHost())).receiveAndRespond();;
+			(new Elevator(1, InetAddress.getLocalHost())).receiveAndRespond();
+			;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public int getCurrentFloor() {
-		// TODO Auto-generated method stub
 		return currFloor;
 	}
+
+	/**
+	 * This method is for testing purposes only... Removes the randomized aspect of
+	 * the door fault
+	 * 
+	 * @param x
+	 */
+	public void checkDoorFaultTest(int x) {
+
+		if (x >= 6) {
+			state = ElevatorState.FIXING_DOORS;
+			System.out.println("Door is jamed. Please stand by while fixing ....");
+			fault = true;
+
+			try {
+				Thread.sleep(3000); // give it time to fix.
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			System.out.println("Fixed!");
+			return;
+		}
+
+		fault = false;
+	}
+
+	/**
+	 * brings the passenger to their destination floor.
+	 * This is a method to be used for testing only...
+	 * Removes unnecessary calls that interact with other components of the system 
+	 * 
+	 * @param obj JSON obj containing the request info
+	 */
+	public void goToDestinationTest(JSONObject obj) {
+		int destinationFloor;
+		try {
+			timer = timer_time;
+			destinationFloor = obj.getInt("destinationFloor"); // destination of passenger
+			int goToDestination = currFloor - destinationFloor; // closest floor to passenger
+			if (goToDestination < 0) { // moving up to destination floor
+				for (int i = currFloor; i < destinationFloor; i++) {
+					updateTimer();
+					System.out.println("Elevator: moving to floor " + ++currFloor);
+					
+					Thread.sleep(500);
+				}
+			} else {
+				for (int i = currFloor; i > destinationFloor; i--) { // moving down to destination
+					updateTimer();
+					System.out.println("Elevator: moving to floor " + --currFloor);
+					Thread.sleep(500);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+
+		}
+	}
+
+	/***
+	 * getter and setter for fault flag
+	 */
+	public void setFaultFlag(boolean x) {
+		this.fault = x;
+	}
+
+	public boolean getFaultFlag() {
+		return this.fault;
+	}
+
+	/**
+	 * Get the flag for the timing fault
+	 * 
+	 * @return the vale of the timing fault flage.
+	 */
+	public boolean getTFaultFlag() {
+		return tFault;
+	}
+
 }
