@@ -43,7 +43,7 @@ public class SchedulerTest {
 			Elevator e = new Elevator(1, InetAddress.getLocalHost());
 			Thread.sleep(1000); // give it time to register 
 			System.out.println(s.getNumElevators());
-			assertEquals(s.getNumElevators(), 1 );
+			assertEquals(s.getNumElevators(), 1);
 			
 			subObj = new JSONObject();
 			subObj.put("id", 1);

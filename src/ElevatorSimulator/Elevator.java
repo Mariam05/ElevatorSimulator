@@ -174,7 +174,7 @@ public class Elevator {
 
 		int val = r.nextInt(10); // generate a number between 0 and 9 (inclusive)
 
-		if (val >= 6) {
+		if (val >= 7) {
 			state = ElevatorState.FIXING_DOORS;
 			System.out.println("Door is jamed. Please stand by while fixing ....");
 			try {
@@ -199,8 +199,9 @@ public class Elevator {
 			int dir = currFloor - passengerFloor; // closest floor to passenger
 			if (dir < 0) { // moving up to passenger
 				for (int i = currFloor; i <= passengerFloor; i++) {
-					System.out.println("Elevator: moving to floor " + currFloor++);
 					updateTimer();
+					System.out.println("Elevator: moving to floor " + currFloor++);
+					
 					Thread.sleep(2000);
 					updateJSONObj();
 					state = ElevatorState.UP;
@@ -223,9 +224,9 @@ public class Elevator {
 				goToDestination(obj);
 			} else { // moving down
 				for (int i = currFloor; i >= passengerFloor; i--) {
+					updateTimer();
 					System.out.println("Elevator: moving to floor " + currFloor--);
 					Thread.sleep(2000);
-					updateTimer();
 					updateJSONObj();
 					state = ElevatorState.DOWN;
 					sendStateUpdate();
@@ -272,9 +273,9 @@ public class Elevator {
 			int goToDestination = currFloor - destinationFloor; // closest floor to passenger
 			if (goToDestination < 0) { // moving up to destination floor
 				for (int i = currFloor; i < destinationFloor; i++) {
-
-					System.out.println("Elevator: moving to floor " + ++currFloor);
 					updateTimer();
+					System.out.println("Elevator: moving to floor " + ++currFloor);
+					
 					Thread.sleep(2000);
 
 					updateJSONObj();
@@ -290,8 +291,9 @@ public class Elevator {
 
 			} else {
 				for (int i = currFloor; i > destinationFloor; i--) { // moving down to destination
-					System.out.println("Elevator: moving to floor " + --currFloor);
 					updateTimer();
+					System.out.println("Elevator: moving to floor " + --currFloor);
+					
 					Thread.sleep(2000);
 
 					updateJSONObj();
@@ -437,14 +439,15 @@ public class Elevator {
 			int goToDestination = currFloor - destinationFloor; // closest floor to passenger
 			if (goToDestination < 0) { // moving up to destination floor
 				for (int i = currFloor; i < destinationFloor; i++) {
-					System.out.println("Elevator: moving to floor " + ++currFloor);
 					updateTimer();
+					System.out.println("Elevator: moving to floor " + ++currFloor);
+					
 					Thread.sleep(500);
 				}
 			} else {
 				for (int i = currFloor; i > destinationFloor; i--) { // moving down to destination
-					System.out.println("Elevator: moving to floor " + --currFloor);
 					updateTimer();
+					System.out.println("Elevator: moving to floor " + --currFloor);
 					Thread.sleep(500);
 				}
 			}

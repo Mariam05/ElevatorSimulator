@@ -55,12 +55,12 @@ public class ElevatorTest {
 			subObj.put("InetAddress", InetAddress.getLocalHost().getHostName());
 			subObj.put("currFloor", 1);
 			subObj.put("State", Elevator.ElevatorState.IDLE );
-			subObj.put("destinationFloor", 5);	// give it a value that will result in a fault 
+			subObj.put("destinationFloor", 3);	// give it a value that will result in a fault 
 		} catch (Exception e ) {
 			// do nothing
 		}
 		elevator.goToDestination(subObj);
-		assertTrue(5 == elevator.getCurrentFloor());
+		assertTrue(3 == elevator.getCurrentFloor());
 	}
 	
 	/**

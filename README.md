@@ -14,7 +14,6 @@ Authors: Defa Hu, Zewen Chen, Henry Wilson, Mariam Almalki, Ruqaya Almalki
 - Explanation of Files and File Names
 - Set-up Instructions
 - Test Instructions 
-- reflection of concurrency
 - UML Class Diagram
 - UML Sequence Diagram
 - State Machine Diagrams
@@ -56,16 +55,19 @@ Test cases are standard JUnit 5 Tests. Be sure to run each test individually to 
 
 ### UML Class Diagram
 This can also be found as a png file in the project zip file. <br>
-![UML](iteration3_class.png)
+![UML](FinalUMLClass.png)
 
 ### UML Sequence Diagram
 This can also be found as a png file in the project zip file. <br>
-![SequenceDiagram](Iteration3_Sequence.png)
+![SequenceDiagram](finalSequence.jpg) 
+
 
 ### State Machine Diagrams
 These can also be found as a png file in the project zip file. <br>
-![UML](SchedulerStateDiagram.png) 
+Scheduler State Machine Diagram: <br>
+![UML](FinalStateMachineScheduler.jpg) 
 <br>
-![UML](ElevatorStateDiagram.png)
+Elevator State Machine Diagram: <br>
+![UML](elevatorFinalStateMachine.jpg)
 
 
