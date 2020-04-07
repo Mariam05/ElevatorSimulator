@@ -41,6 +41,7 @@ public class ElevatorTest {
 		subObj.put("destinationFloor", 5);
 		elevator.setFaultFlag(true);
 		elevator.checkDoorFaultTest(9);
+		
 	}
 
 	
