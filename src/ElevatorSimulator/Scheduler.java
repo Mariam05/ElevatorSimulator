@@ -13,6 +13,8 @@ import java.util.Queue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ElevatorSimulator.Elevator.ElevatorState;
+
 /**
  * this class contains the logic engine of the process. it receives the
  * requests, processes it, and sends a command to an elevator to fulfill the
@@ -279,10 +281,19 @@ public class Scheduler {
 									// get the request
 									JSONObject firstReq = requestQueue.remove();
 									int currFloor = firstReq.getInt("floor");
+									int destFloor = firstReq.getInt("destinationFloor");
+									ElevatorState direction;
+									if((currFloor - destFloor) < 0 ) {//State == UP
+										direction = ElevatorState.UP;
+									}else {
+										direction = ElevatorState.DOWN;
+									}
+									
 									// iterate through to get the elevator that has the min distance
 									for (int elev : elevators.keySet()) {
 										int distance = Math.abs(currFloor - (elevators.get(elev)).getInt("currFloor"));
-										if (distance < minDistance) {
+									    boolean checkState = ((elevators.get(elev)).get("State") == direction); 
+										if (distance < minDistance && checkState) {
 											elevToSchedule = elev;
 											minDistance = distance;
 										}
