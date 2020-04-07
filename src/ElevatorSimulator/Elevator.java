@@ -30,24 +30,24 @@ public class Elevator {
 		IDLE, DOOR_OPEN, DOOR_CLOSED, UP, DOWN, FIXING_DOORS
 	}
 
-	/*
+	/**
 	 * Sockets and packets used to send and receive to/from the scheduler
 	 */
 	private DatagramPacket receivePacket, subscribePacket, ackPacket;
 	private DatagramSocket sendSocket, receiveSocket, subscribeSocket, ackSocket;
-	/*
+	/**
 	 * the scheduler's address
 	 */
 	private InetAddress schedulerAddress;
-	/*
+	/**
 	 * the elevator state
 	 */
 	public ElevatorState state;
-	/*
+	/**
 	 * used to as a key by the scheduler to keep track of the number of elevators
 	 */
 	private int id;
-	/*
+	/**
 	 * the current floor the elevator is at
 	 */
 	private int currFloor;
@@ -57,15 +57,15 @@ public class Elevator {
 	 */
 	private int updateStatusPort = 1026;
 
-	/*
+	/**
 	 * the ACK port used to communicate with the scheduler
 	 */
 	private int ackPort = 1040;
-	/*
+	/**
 	 * port used when an elevator wants to subscribe to a scheduler
 	 */
 	private int subscriptionPort = 1035;
-	/*
+	/**
 	 * object containing all the elevator information
 	 */
 	private JSONObject subObj;
