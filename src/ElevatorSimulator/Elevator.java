@@ -11,15 +11,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Things we need to do : - Split moving state into moving up and moving down -
- * Have a data structure that holds all the requests sent to it.
- *
- * - sort the floors it needs to go to and go to them in order. - Have a thread
- * to receive requests and a thread to move
- * 
- * ERROR: the floor timing error is hard coded in line 6 of the data file. 
- * 
- * @author Misho
+ * This floor represents an elevator. 
+ * An elevator has states. 
+ * An elevator can have 2 different faults: 
+ * - A timing floor fault (this is fatal, ends the systems)
+ * - A door jam fault (this fault is transient, we will recover)
+ * The floor timing error is hard coded in line 6 of the data file. 
  *
  */
 
@@ -75,8 +72,14 @@ public class Elevator {
 	 */
 	private JSONObject subObj;
 
+	/**
+	 * Keeps track of the current value of the timer
+	 */
 	private int timer;
-
+	
+	/**
+	 * Value to initialize timer to
+	 */
 	private static int timer_time = 6;
 	/**
 	 * Constructor used to initialize all instance variables
