@@ -11,12 +11,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * This floor represents an elevator. 
- * An elevator has states. 
- * An elevator can have 2 different faults: 
- * - A timing floor fault (this is fatal, ends the systems)
- * - A door jam fault (this fault is transient, we will recover)
- * The floor timing error is hard coded in line 6 of the data file. 
+ * This floor represents an elevator. An elevator has states. An elevator can
+ * have 2 different faults: - A timing floor fault (this is fatal, ends the
+ * systems) - A door jam fault (this fault is transient, we will recover) The
+ * floor timing error is hard coded in line 6 of the data file.
  *
  */
 
@@ -76,11 +74,17 @@ public class Elevator {
 	 * Keeps track of the current value of the timer
 	 */
 	private int timer;
-	
+
 	/**
 	 * Value to initialize timer to
 	 */
 	private static int timer_time = 6;
+
+	/*
+	 * boolean to indicate fault
+	 */
+	private boolean fault = false, tFault = false;
+
 	/**
 	 * Constructor used to initialize all instance variables
 	 * 
@@ -94,7 +98,7 @@ public class Elevator {
 		this.id = id;
 		this.currFloor = 1;
 		state = ElevatorState.IDLE;
-		timer = timer_time; 
+		timer = timer_time;
 
 		// create json and store all the instance variable states
 		subObj = new JSONObject();
@@ -237,18 +241,20 @@ public class Elevator {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
+		}
 
 	}
-	
+
 	/**
-	 * If the timer reaches 0, it means that it the elevator took way too long to reach the floor 
-	 * and there is an error
+	 * If the timer reaches 0, it means that it the elevator took way too long to
+	 * reach the floor and there is an error
+	 * 
 	 * @throws Exception if the timer has reached 0
 	 */
 	private void updateTimer() throws Exception {
 		timer--;
 		if (timer == 0) {
+			tFault = true;
 			throw new Exception("Fatal floor timing error.. exiting");
 		}
 	}
@@ -270,7 +276,7 @@ public class Elevator {
 					System.out.println("Elevator: moving to floor " + ++currFloor);
 					updateTimer();
 					Thread.sleep(2000);
-					
+
 					updateJSONObj();
 					state = ElevatorState.UP;
 					sendStateUpdate();
@@ -287,7 +293,7 @@ public class Elevator {
 					System.out.println("Elevator: moving to floor " + --currFloor);
 					updateTimer();
 					Thread.sleep(2000);
-					
+
 					updateJSONObj();
 					state = ElevatorState.DOWN;
 					sendStateUpdate();
@@ -388,8 +394,84 @@ public class Elevator {
 	}
 
 	public int getCurrentFloor() {
-		// TODO Auto-generated method stub
 		return currFloor;
+	}
+
+	/**
+	 * This method is for testing purposes only... Removes the randomized aspect of
+	 * the door fault
+	 * 
+	 * @param x
+	 */
+	public void checkDoorFaultTest(int x) {
+
+		if (x >= 6) {
+			state = ElevatorState.FIXING_DOORS;
+			System.out.println("Door is jamed. Please stand by while fixing ....");
+			fault = true;
+
+			try {
+				Thread.sleep(3000); // give it time to fix.
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			System.out.println("Fixed!");
+			return;
+		}
+
+		fault = false;
+	}
+
+	/**
+	 * brings the passenger to their destination floor.
+	 * This is a method to be used for testing only...
+	 * Removes unnecessary calls that interact with other components of the system 
+	 * 
+	 * @param obj JSON obj containing the request info
+	 */
+	public void goToDestinationTest(JSONObject obj) {
+		int destinationFloor;
+		try {
+			timer = timer_time;
+			destinationFloor = obj.getInt("destinationFloor"); // destination of passenger
+			int goToDestination = currFloor - destinationFloor; // closest floor to passenger
+			if (goToDestination < 0) { // moving up to destination floor
+				for (int i = currFloor; i < destinationFloor; i++) {
+					System.out.println("Elevator: moving to floor " + ++currFloor);
+					updateTimer();
+					Thread.sleep(500);
+				}
+			} else {
+				for (int i = currFloor; i > destinationFloor; i--) { // moving down to destination
+					System.out.println("Elevator: moving to floor " + --currFloor);
+					updateTimer();
+					Thread.sleep(500);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+
+		}
+	}
+
+	/***
+	 * getter and setter for fault flag
+	 */
+	public void setFaultFlag(boolean x) {
+		this.fault = x;
+	}
+
+	public boolean getFaultFlag() {
+		return this.fault;
+	}
+
+	/**
+	 * Get the flag for the timing fault
+	 * 
+	 * @return the vale of the timing fault flage.
+	 */
+	public boolean getTFaultFlag() {
+		return tFault;
 	}
 
 }
