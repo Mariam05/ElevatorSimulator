@@ -26,11 +26,11 @@ import java.util.Queue;
 public class Floor {
 
 	/* variables for RPC */
-	/*
+	/**
 	 * sockets used to send the requests and receive the ACK from/to the scheduler
 	 */
 	private DatagramSocket sendSocket, receiveSocket;
-	/*
+	/**
 	 * packets used to send the requests and receive the ACK from/to the scheduler
 	 */
 	private DatagramPacket sendPacket, receivePacket;
@@ -40,12 +40,12 @@ public class Floor {
 	private static int schedulerPort = 23;
 	private InetAddress schedulerAddress;
 
-	/*
+	/**
 	 * keeps track of the number of requests
 	 */
 	private int i = 0;
 
-	/*
+	/**
 	 * following variables used to read the file and store the important info read
 	 * from them
 	 */
@@ -55,7 +55,7 @@ public class Floor {
 	private int floor;
 	private boolean floorButton; // true if up, false if down c
 	private int destinationFloor;
-	/*
+	/**
 	 * used to stored the info in a accessible data structure
 	 */
 	private ArrayList<ControlDate> datas;
@@ -164,7 +164,6 @@ public class Floor {
 
 				System.out.println("Floor: Packet sent.\n");
 
-				// TODO: Make the var random or make a sped up clock
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
